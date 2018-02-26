@@ -1,7 +1,13 @@
 ### waiterphp后台项目方案
 该方案基于waiterphp/app开发。提供了后来的常见功能，如登录、权限、列表、表单、统计等。项目采用类库和模板代码的形式，为后来的开发提供便捷，并保持很友好的二次开发性能。
 ### vue前端
-本后来采用vue解决前端界面，需要通过以下方式下载并安装:
+本后来采用vue解决前端界面，可以访问以下链接下载代码：
+
+```
+https://github.com/waiterphp/admin-vue
+```
+
+也可以通过npm安装:
 
 ``` javascript
 npm install
