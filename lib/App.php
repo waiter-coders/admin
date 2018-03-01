@@ -1,8 +1,4 @@
 <?php
-Engine::addPath('Lib', __DIR__ . DIRECTORY_SEPARATOR);
-Engine::addPath('App', dirname(dirname( __DIR__)) . DIRECTORY_SEPARATOR . 'App');
-Service::setPath(dirname(dirname( __DIR__))  . '/Service');// 功能服务文件根路径
-
 class App
 {
     private static $mainPath = '';
@@ -33,6 +29,9 @@ class App
     public static function main()
     {
         return self::get(self::$mainPath);
+        Engine::addPath('Lib', __DIR__ . DIRECTORY_SEPARATOR);
+        Engine::addPath('App', dirname(dirname( __DIR__)) . DIRECTORY_SEPARATOR . 'App');
+        Service::setPath(dirname(dirname( __DIR__))  . '/Service');// 功能服务文件根路径
     }
 }
 
