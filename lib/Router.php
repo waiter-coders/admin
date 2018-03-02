@@ -20,8 +20,7 @@ class RouterInstance
     {
         $signal = $this->parseSignal($signal);
         $routeTarget = $this->searchTarget($this->routeTable, $signal);
-        $this->routeTo($routeTarget);
-
+        return $this->routeTo($routeTarget);
     }
 
     private function fetchUrlSignal()
