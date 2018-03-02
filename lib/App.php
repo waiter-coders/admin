@@ -1,68 +1,75 @@
 <?php
 class App
 {
-    private static $mainPath = '';
-    private static $apps = array();
+    public static function web()
+    {
+        return new Web_App_Engine();
+    }
 
-    private static $defaultConfig = array(
-        'route'=>array('default'=>'controller.page'),
-        'app'=>array(
-        ),
+    public static function Shell()
+    {
+        return new Shell_App_Engine();
+    }
+
+    public static function consumer()
+    {
+        return new Consumer_App_Engine();
+    }
+}
+
+class App_Engine
+{
+    protected $configs = array(
+        'path.config'=>__DIR__ . '/../config',
+        'path.routes'=>__DIR__ . '/../routes',
+        'path.controller'=>__DIR__ . '/../controller',
+        'path.events'=>__DIR__ . '/../events',
+        'path.model'=>__DIR__ . '/../model',
+        'path.service'=>__DIR__ . '/../service',
+        'path.views.compile'=>__DIR__ . '/../storage/views',
+        'path.queue.consumer'=>__DIR__ . '/../consumer',
+        'path.shell'=>__DIR__ . '/../shell',
+        'path.session'=>__DIR__ . '/../storage/session',
+        'path.logs'=>__DIR__ . '/../storage/logs',
     );
 
-    public static function get($appPath, $config = array())
+    public function set($key, $value)
     {
-        // 转化为全路径
-        $rulePath = realpath($appPath);
-        if (!is_dir($rulePath)) {
-            throw new Exception('path not exist:'. $rulePath);
-        }
-        // 创建
-        self::$mainPath = empty(self::$mainPath) ? $appPath : self::$mainPath; // 首次装载的应用路径为主应用路径
-        if (!isset(self::$apps[$appPath])) {
-            $config = empty($config) ? self::$defaultConfig : array_cover(self::$defaultConfig, $config);
-            self::$apps[$appPath] =  new AppInstance($appPath, $config);
-        }
-        return self::$apps[$appPath];
+        $this->configs[$key] = $value;
+        return $this;
     }
 
-    public static function main()
-    {
-        return self::get(self::$mainPath);
-        Engine::addPath('Lib', __DIR__ . DIRECTORY_SEPARATOR);
-        Engine::addPath('App', dirname(dirname( __DIR__)) . DIRECTORY_SEPARATOR . 'App');
-        Service::setPath(dirname(dirname( __DIR__))  . '/Service');// 功能服务文件根路径
-    }
 }
 
 
+class Web_App_Engine extends App_Engine
+{
+    private $response = array();
 
-class Dispatcher
+    public function route($routeName = 'web')
+    {
+        return $this;
+    }
+
+    public function request(callable $callback)
+    {
+        $this->response = $callback($this->response);
+        return $this;
+    }
+
+    public function response(callable $callback)
+    {
+        $this->response = $callback($this->response);
+        return $this;
+    }
+}
+
+class Shell_App_Engine extends App_Engine
 {
 
 }
 
-
-class AppRequest
-{
-    public function __call($method, $arguments)
-    {
-        return call_user_func_array(array('\Request', $method), $arguments);
-    }
-}
-
-
-class QueueBase extends AppBase
+class Consumer_App_Engine extends App_Engine
 {
 
 }
-
-//class Request
-//{
-//
-//}
-//
-//class Response
-//{
-//
-//}
