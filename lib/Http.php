@@ -9,7 +9,7 @@ class Http
 
     public static function host()
     {
-
+        return rtrim(self::protocol().$_SERVER['HTTP_HOST'], '\\');
     }
 
     public static function ip()
@@ -27,9 +27,14 @@ class Http
         return preg_match ( '/[\d\.]{7,15}/', $ip, $matches ) ? $matches [0] : '';
     }
 
-    public static function path()
+    public static function path($pos = 0)
     {
-
+        $path = isset($_SERVER['PATH_INFO']) ? ltrim($_SERVER['PATH_INFO'], '/') : '';
+        if ($pos == 0) {
+            return $path;
+        }
+        $path = explode('/', $path);
+        return $path[$pos];
     }
 
     public static function query()
@@ -37,8 +42,23 @@ class Http
 
     }
 
-    public static function scriptName()
+    public static function url()
     {
+        return rtrim(self::host(). '/'. $_SERVER['SCRIPT_NAME'], '\\');
+    }
 
+    public static function refer()
+    {
+        return isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
+    }
+
+    public static function redirect($jumpUrl)
+    {
+        // 没有包含域名的自动包含域名
+        if (strncmp ($jumpUrl, 'http', 4)) {
+            $jumpUrl = self::url() . '/' . ltrim($jumpUrl, '/');
+        }
+        ob_end_clean();
+        header("Location:" . $jumpUrl);
     }
 }

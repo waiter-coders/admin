@@ -52,7 +52,7 @@ class App_Engine
         'path.loader'=>array(),
     );
 
-    protected $configs = array();
+    protected $config = array();
     protected $isInit = false;
     protected $response = '';
 
@@ -119,7 +119,7 @@ class App_Engine
             }
 
             // 装载配置文件
-            $this->configs = Config::create($this->sets['path.config']);
+            $this->config = Config::create($this->sets['path.config'], 'app');
 
             // 设置状态
             $this->isInit = true;

@@ -103,9 +103,4 @@ function dotToClass($dot)
     return '\\' . implode('\\', $class);
 }
 
-function dotGetFromArray($dot, $array)
-{
-
-}
-
 
