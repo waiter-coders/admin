@@ -2,7 +2,23 @@
 
 class Config
 {
-    static private $path = array();
+    private $path = array();
+    private $config = array();
+
+    public static function create($paths)
+    {
+        return new Config($paths);
+    }
+
+    private function __construct($paths)
+    {
+        $this->paths = !is_array($paths) ? array($paths) : $paths;
+    }
+
+    public function get($config)
+    {
+        return dotGetFromArray($config, $this->config);
+    }
 
     static public function addPath($path)
     {
@@ -10,7 +26,7 @@ class Config
     }
 
     // 提供一种通过"."链接的配置项获取方式
-    static public function get($config, $path = '')
+    static public function get($path)
     {
         if (empty(self::$path)) {
             throw new Exception('config path not set');
@@ -38,7 +54,7 @@ class Config
                 if (is_file($filePath)) {
                     $content = require $filePath;
                     $content = empty($content) ? array() : $content;
-                    $config = array_cover($content, $config);
+                    $config = array_merge_cover($content, $config);
                 }
             }
             if (empty($config)) {
@@ -63,6 +79,34 @@ class Config
     }
 
     // en_name 和 ch_name的读取
+
+    public static function loadConfig($config)
+    {
+        if (is_string($config)) {
+            $config = self::fetchConf($config);
+        }
+        if (!empty($config)) {
+//            self::$_config = array_merge_cover(self::$_config, $config);
+        }
+    }
+
+    // config文件的契约实现
+    private static function fetchConf($path, $isLocal = false)
+    {
+        $config = array();
+        $file = $isLocal ? 'config.local.php' : 'config.php';
+        if (is_file($path . '/' . $file)) { // 根目录下的config文件
+            $config = require $path . '/' . $file;
+        }
+        else if (is_file($path . '/config/' . $file)) { //根目录config文件夹下的config文件
+            $config = require $path . '/config/' . $file;
+        }
+        // local机制，加载local配置覆盖默认配置，解决多环境问题
+        if (!$isLocal) {
+            $config = array_merge_cover($config, self::fetchConf($path, true));
+        }
+        return $config;
+    }
     
 }
 

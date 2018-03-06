@@ -15,14 +15,7 @@ class Version
 
     public static function newerVersion($compareVersion)
     {
-        $currentVersion = explode('.', self::$version);
-        $compareVersion = explode('.', $compareVersion);
-        foreach ($currentVersion as $pos=>$number) {
-            if ($number > $compareVersion[$pos]) {
-                return true;
-            }
-        }
-        return false;
+        return version_compare(self::$version, $compareVersion, '>=');
     }
 
     public static function versionIsEmpty()

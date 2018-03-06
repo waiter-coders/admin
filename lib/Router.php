@@ -5,6 +5,11 @@ class Router
     {
         return new RouterInstance();
     }
+
+    public static function load($file)
+    {
+
+    }
 }
 
 class RouterInstance
