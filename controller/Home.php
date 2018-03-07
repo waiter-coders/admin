@@ -1,7 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2018/2/26
- * Time: 11:53
- */
+namespace Controller;
+
+class Home extends \Controller\Base
+{
+    public function show()
+    {
+        echo 1;
+    }
+}

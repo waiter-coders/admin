@@ -14,7 +14,13 @@ class Router
 
 class RouterInstance
 {
-    private $routeTable = null;
+    private $routeTable = array();
+
+    public function setTable($routeTable)
+    {
+        $this->routeTable = $routeTable;
+        return $this;
+    }
 
     public function group()
     {
@@ -23,9 +29,14 @@ class RouterInstance
 
     public function route($signal = null)
     {
-        $signal = $this->parseSignal($signal);
-        $routeTarget = $this->searchTarget($this->routeTable, $signal);
+        $routeTarget = $this->target($signal);
         return $this->routeTo($routeTarget);
+    }
+
+    public function target($signal = null)
+    {
+        $signal = $this->parseSignal($signal);
+        return $this->searchTarget($this->routeTable, $signal);
     }
 
     private function fetchUrlSignal()

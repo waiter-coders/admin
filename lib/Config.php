@@ -9,7 +9,7 @@ class Config
         return self::$configs[$name] = new Config($paths);
     }
 
-    public static function instance($name = 'default')
+    public static function instance($name)
     {
         return isset(self::$configs[$name]) ? self::$configs[$name] : null;
     }
@@ -25,12 +25,12 @@ class Config
 
     public function get($config)
     {
-        $config = explode($config, '.', 2);
+        $config = explode('.', $config, 2);
         $domain = array_shift($config);
         if (!isset($this->config[$domain])) {
             $this->config[$domain] = $this->loadFile($domain);
         }
-        return $this->dataByIndex($this->config['domain'], $config);
+        return $this->dataByIndex($this->config[$domain], $config);
     }
 
     public function loadFile($domain)

@@ -1,7 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2018/2/26
- * Time: 11:53
- */
+namespace Controller\Helper;
+
+class Helper extends \Controller\Base
+{
+    public function show()
+    {
+        var_dump($this->config('environment'));
+        request()->getInt();
+    }
+}

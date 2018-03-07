@@ -4,14 +4,14 @@ class Container
     private static $instances = array(); // 单例类
 
     // 单例工具
-    public static function instance($className, $params = array())
+    public static function instance($class, $params = array())
     {
-        $class = dotToClass($className);
-        if (isset(self::$instances[$className])) {
-            return self::$instances[$className];
+        $class = (strpos($class, '.') > 0) ? dotToClass($class) : $class;
+        if (isset(self::$instances[$class])) {
+            return self::$instances[$class];
         }
         // 产生新对象
-        self::$instances[$className] = new $class($params);
-        return self::$instances[$className];
+        self::$instances[$class] = new $class($params);
+        return self::$instances[$class];
     }
 }

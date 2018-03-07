@@ -55,6 +55,7 @@ class App_Engine
     protected $config = array();
     protected $isInit = false;
     protected $response = '';
+    protected $exceptionCallback = null;
 
     public function set($key, $value)
     {
@@ -77,16 +78,20 @@ class App_Engine
         Event::trigger($event);
     }
 
+    public function config()
+    {
+        return $this->config;
+    }
+
     public function route($routeName = 'web')
     {
         $routeFile = $this->sets['path.routes'] . '/' . $routeName . '.php';
         if (!is_file($routeFile)) {
             throw new Exception('route file not exist:' . $routeFile);
         }
-        $dotMethod = require $routeFile;
-        $dotMethod = dotToMethod($dotMethod);
         $this->init();
-        $this->response = call_user_func_array($dotMethod, array());
+        $router = require $routeFile;
+        $this->response = $this->executeRouter($router);
         return $this;
     }
 
@@ -96,14 +101,22 @@ class App_Engine
         return $this;
     }
 
+    public function exception(callable $callback)
+    {
+        $this->exceptionCallback = $callback;
+    }
+
     public function __destruct()
     {
-        echo !is_string($this->response) ? json_encode($this->response) : $this->response;
+        if (!empty($this->response)) {
+            echo !is_string($this->response) ? json_encode($this->response) : $this->response;
+        }
     }
 
     protected function init()
     {
         if ($this->isInit == false) {
+            Event::trigger('app.init.start');
             // 初始化应用类
             Engine::addPath('Controller', $this->sets['path.controller']);
             Engine::addPath('Event', $this->sets['path.events']);
@@ -123,7 +136,28 @@ class App_Engine
 
             // 设置状态
             $this->isInit = true;
+            Event::trigger('app.init.end');
         }
+    }
+
+
+    private function executeRouter($router)
+    {
+        $response = '';
+        Event::trigger('app.route.start');
+        if (is_string($router)) {
+            list($class, $method) = dotToMethod($router);
+            $object = Container::instance($class);
+            $response = call_user_func_array(array($object, $method), array());
+        }
+        else if (is_array($router)) {
+            $response = Router::create()->setTable($router)->route();
+        }
+        else if (is_callable($router)) {
+            $response = $router();
+        }
+        Event::trigger('app.route.end');
+        return $response;
     }
 
 }
