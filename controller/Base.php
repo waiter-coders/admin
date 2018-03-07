@@ -5,12 +5,12 @@ class Base
 {
     protected function model($class)
     {
-        return \Container::instance('model.' . $class);
+        return \Instance::get('model.' . $class);
     }
 
     protected function service($class)
     {
-        return \Container::instance('service.' . $class);
+        return \Instance::get('service.' . $class);
     }
 
     protected function render($template, $params)

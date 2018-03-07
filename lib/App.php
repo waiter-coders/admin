@@ -147,7 +147,7 @@ class App_Engine
         Event::trigger('app.route.start');
         if (is_string($router)) {
             list($class, $method) = dotToMethod($router);
-            $object = Container::instance($class);
+            $object = Instance::get($class);
             $response = call_user_func_array(array($object, $method), array());
         }
         else if (is_array($router)) {

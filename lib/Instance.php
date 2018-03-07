@@ -1,10 +1,10 @@
 <?php
-class Container
+class Instance
 {
     private static $instances = array(); // 单例类
 
     // 单例工具
-    public static function instance($class, $params = array())
+    public static function get($class, $params = array())
     {
         $class = (strpos($class, '.') > 0) ? dotToClass($class) : $class;
         if (isset(self::$instances[$class])) {
