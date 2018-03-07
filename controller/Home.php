@@ -5,6 +5,6 @@ class Home extends \Controller\Base
 {
     public function show()
     {
-        echo 1;
+        echo \AdminPaging::baseUrl();
     }
 }
