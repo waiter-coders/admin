@@ -70,18 +70,18 @@ abstract class AdminTools
     public static function domainUrl()
     {
         list($domain, $action) = self::domainAndAction();
-        return Url::baseUrl() . '/' . $domain;
+        return Http::url() . '/' . $domain;
     }
 
     public static function baseUrl()
     {
-        return Url::baseUrl() . '/';
+        return Http::url() . '/';
     }
 
     public static function controllerUrl()
     {
         list($domain, $controller, $action) = self::domainAndAction();
-        return Url::baseUrl() . '/' . $domain . '/' . $controller;
+        return Http::url() . '/' . $domain . '/' . $controller;
     }
 
     public static function domainAndAction()

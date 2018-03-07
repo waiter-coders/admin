@@ -55,6 +55,14 @@ class View
         $view->render($template, $params);
     }
 
+    public function fetch($template, $params)
+    {
+        $view = self::instance();
+        $params = (!empty(self::$config['init'])) ? self::$config['init'] : array();
+        $params = array_merge($params, self::$params);
+        return $view->fetch($template, $params);
+    }
+
     private static function instance()
     {
         static $view = null;

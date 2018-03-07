@@ -61,4 +61,14 @@ class Http
         ob_end_clean();
         header("Location:" . $jumpUrl);
     }
+
+    public static function isAjax()
+    {
+        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            return false;
+        }
+        $ajaxTab = strtolower($_SERVER['HTTP_X_REQUESTED_WITH']);
+        return ($ajaxTab == 'xmlhttprequest') ? true : false;
+    }
+
 }

@@ -1,61 +1,17 @@
 <?php
-class App
+class App_Engine_Base
 {
-    private static $currentApp = null;
-
-    public static function web()
-    {
-        return self::$currentApp = new Web_App_Engine();
-    }
-
-    public static function Shell()
-    {
-        return self::$currentApp = new Shell_App_Engine();
-    }
-
-    public static function consumer()
-    {
-        return self::$currentApp = new Consumer_App_Engine();
-    }
-
-    public static function webSocket()
-    {
-        return self::$currentApp = new WebSocket_App_Engine();
-    }
-
-    public static function create()
-    {
-        return self::$currentApp = new App_Engine();
-    }
-
-    public static function current()
-    {
-        return self::$currentApp;
-    }
-}
-
-class App_Engine
-{
-    protected $sets = array(
-        'path.config'=>__DIR__ . '/../config',
-        'path.routes'=>__DIR__ . '/../routes',
-        'path.controller'=>__DIR__ . '/../controller',
-        'path.events'=>__DIR__ . '/../events',
-        'path.model'=>__DIR__ . '/../model',
-        'path.service'=>__DIR__ . '/../service',
-        'path.views.compile'=>__DIR__ . '/../storage/views',
-        'path.queue.consumer'=>__DIR__ . '/../consumer',
-        'path.shell'=>__DIR__ . '/../shell',
-        'path.session'=>__DIR__ . '/../storage/session',
-        'path.logs'=>__DIR__ . '/../storage/logs',
-        'path.drives'=>__DIR__ . '/../drives',
-        'path.loader'=>array(),
-    );
+    protected $sets = array();
 
     protected $config = array();
     protected $isInit = false;
     protected $response = '';
     protected $exceptionCallback = null;
+
+    public function __construct()
+    {
+        $this->sets = $this->defaultSets();
+    }
 
     public function set($key, $value)
     {
@@ -160,26 +116,23 @@ class App_Engine
         return $response;
     }
 
-}
-
-
-class Web_App_Engine extends App_Engine
-{
-
-
-}
-
-class Shell_App_Engine extends App_Engine
-{
-
-}
-
-class Consumer_App_Engine extends App_Engine
-{
-
-}
-
-class WebSocket_App_Engine extends App_Engine
-{
-
+    private function defaultSets()
+    {
+        $appPath = realpath(dirname(dirname(__DIR__)));
+        return array(
+            'path.config'=> $appPath . '/config',
+            'path.routes'=> $appPath . '/routes',
+            'path.controller'=> $appPath . '/controller',
+            'path.events'=> $appPath . '/events',
+            'path.model'=> $appPath . '/model',
+            'path.service'=> $appPath . '/service',
+            'path.views.compile'=> $appPath . '/storage/views',
+            'path.queue.consumer'=>$appPath . '/consumer',
+            'path.shell'=> $appPath . '/shell',
+            'path.session'=> $appPath . '/storage/session',
+            'path.logs'=> $appPath . '/storage/logs',
+            'path.drives'=> $appPath . '/drives',
+            'path.loader'=>array(),
+        );
+    }
 }

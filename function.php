@@ -12,20 +12,7 @@ function check_error($boolean, $errorMessage)
     }
 }
 
-function request()
-{
-    return Request::data('get');
-}
 
-function post()
-{
-    return Request::data('post');
-}
-
-function cli()
-{
-    return Request::data('cli');
-}
 
 function lowerToUpper($class)
 {
