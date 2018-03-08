@@ -42,9 +42,7 @@ class App_Engine_Base
     public function route($routeName = 'web')
     {
         $routeFile = $this->sets['path.routes'] . '/' . $routeName . '.php';
-        if (!is_file($routeFile)) {
-            throw new Exception('route file not exist:' . $routeFile);
-        }
+        assertOrException(is_file($routeFile), 'route file not exist:' . $routeFile);
         $this->init();
         $router = require $routeFile;
         $this->response = $this->executeRouter($router);

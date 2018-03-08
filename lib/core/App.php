@@ -1,4 +1,6 @@
 <?php
+Engine::addPath('Lib',dirname(dirname(__DIR__)) . '/lib/app'); // 引擎应用类
+
 class App
 {
     private static $currentApp = null;

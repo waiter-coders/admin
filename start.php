@@ -6,7 +6,6 @@ header("content-type;text/html;charset=utf8"); // 默认字符为utf8
 
 // 启动引擎自动装载机制
 Engine::addPath('Lib', __DIR__ . '/lib/core'); // 引擎核心类
-Engine::addPath('Lib', __DIR__ . '/lib/app'); // 引擎应用类
 spl_autoload_register(array('Engine', 'load'), true, true);
 
 // 尝试加载composer的自动装载
@@ -116,11 +115,20 @@ function getDataByDot($data, $dot)
     // 一层一层搜索键值数组
     $dot = explode('.', $dot);
     foreach ($dot as $key) {
-        if (!isset($data[$key])) {
-            throw new Exception('has no item:' . $key);
-        }
+        assertOrException(isset($data[$key]), 'has no item:' . $key);
         $data = $data[$key];
     }
     return $data;
 }
 
+function assertOrException($boolean, $errorMessage, $code = 500)
+{
+    if (!$boolean) {
+        throw new Exception($errorMessage, $code);
+    }
+}
+
+function lowerToUpper($class)
+{
+
+}

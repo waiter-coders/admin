@@ -13,9 +13,14 @@ class Base
         return \Instance::get('service.' . $class);
     }
 
-    protected function fetchView($template, $params)
+    protected function render($template, $params)
     {
         return \View::fetch();
+    }
+
+    protected function success($response)
+    {
+        echo json_encode(array('code'=>0, 'data'=>$response));
     }
 
     protected function config($config)

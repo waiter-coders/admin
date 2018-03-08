@@ -47,9 +47,7 @@ class RouterInstance
     private function searchTarget($routes, $signal)
     {
         foreach ($routes as $route) {
-            if (!isset($route[0]) && !isset($route['url'])) {
-                throw new \Exception('route not set');
-            }
+            assertOrException(isset($route[0]) || isset($route['url']), 'route not set');
             $pattern = isset($route[0]) ? $route[0] : $route['url'];
             if (preg_match($this->formatPattern($pattern), $signal, $matches)) {
                 return $this->generateCmd($route[1], $matches);
@@ -78,9 +76,7 @@ class RouterInstance
         $api = explode('.', $action);
         $function = array_pop($api);
         $class = implode('\\', $api);
-        if (empty($class) || empty($function)) {
-            throw new Exception('call api error:'.json_encode($api));
-        }
+        assertOrException(!empty($class) && !empty($function), 'call api error:'.json_encode($api));
         $params = array();
         if (func_num_args() > 1) {
             $params = func_get_args();

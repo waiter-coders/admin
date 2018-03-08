@@ -52,9 +52,7 @@ class DB
     public static function connection($name = null)
     {
         $name = empty($name) ? self::$defaultName : $name;
-        if (!isset(self::$config[$name])) {
-            throw new Exception('not has connection config:' . $name);
-        }
+        assertOrException(isset(self::$config[$name]), 'not has connection config:' . $name);
         if (!isset(self::$connection[$name])) {
             self::$connection[$name] = new PdoDatabaseInstance(self::$config[$name]);
         }
@@ -64,11 +62,7 @@ class DB
     public static function table($table, $name = null)
     {
         $name = empty($name) ? self::$defaultName : $name;
-        if (!isset(self::$config[$name])) {
-            $message = 'not has connection config:' . $name;
-            $message .= ',if you used many databases, please set one isDefault true';
-            throw new Exception($message);
-        }
+        assertOrException(isset(self::$config[$name]), 'not has connection config or default config:' . $name);
         return new DB_Query($table, $name);
     }
 
@@ -95,9 +89,7 @@ class DB
         }
 
         // 单数据库配置
-        if (!isset($config['host']) || !isset($config['database'])) {
-            throw new Exception('no host or database set');
-        }
+        assertOrException(isset($config['host']) && isset($config['database']), 'no host or database set');
         self::$config[$name] = self::formatConfig($config);
         if (isset($config['isDefault']) && $config['isDefault'] == true) {
             self::$defaultName = $name;
@@ -199,9 +191,7 @@ class DB_Query
     {
         $pattern = '/' . $column . ' = (\d+)/i';
         $hasColumn = preg_match($pattern, $this->where, $matches);
-        if (!$hasColumn) {
-            throw new Exception('can not find part column ' . $column);
-        }
+        assertOrException($hasColumn, 'can not find part column ' . $column);
         $partId = $matches[1];
         $suffix = $method($partId);
         $this->mainTable .= '_' . $suffix;
@@ -335,9 +325,7 @@ class DB_Query
 
     public function update($data)
     {
-        if (empty($this->where)) {
-            throw new Exception('please set where when update');
-        }
+        assertOrException(!empty($this->where), 'please set where when update');
         list($where, $queryParams) = DB_Where::parse($this->where);
         list($updateSql, $updateParams) = $this->parseUpdateData($data);
         $sql = 'update ' . $this->mainTable . ' set ' . $updateSql . ' where ' . $where;
@@ -360,9 +348,7 @@ class DB_Query
 
     public function delete()
     {
-        if (empty($this->where)) {
-            throw new Exception('please set where when update');
-        }
+        assertOrException(!empty($this->where), 'please set where when delete');
         list($where, $queryParams) = DB_Where::parse($this->where);
         $sql = sprintf('delete from %s where %s;', $this->mainTable, $where);
         DB::connection($this->connection)->execute($sql, $queryParams);
@@ -440,9 +426,7 @@ class DB_Where
         }
         $value = !is_array($value) ? array($value) : $value; // 参数都转化为数组，方便参数间的合并
         $where = self::parseItemWhere($key, $value);
-        if (substr_count($where, '?') != count($value)) {
-            throw new \Exception(sprintf('param num error:sql-%s,params:%s',$where, json_encode($value)));
-        }
+        assertOrException(substr_count($where, '?') == count($value), 'param num error:' . $where. json_encode($value));
         return array($where, $value);
     }
 
