@@ -7,6 +7,6 @@ class Home extends \Controller\Base
     {
         echo \AdminPaging::baseUrl();
         echo $this->request()->getInt('id', 12);
-//        return $this->fetchView('tmp', array());
+        var_dump($this->config('database.default.aa'));
     }
 }

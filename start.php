@@ -86,6 +86,12 @@ function array_merge_cover($baseArray, $mergeArray)
     return $baseArray;
 }
 
+// 检查是否是dot结构
+function isDot($dot)
+{
+    return (is_string($dot) && strpos($dot, '.') > 0);
+}
+
 // 把 controller.home.show 类型的转化为ControllerHome类和方法 show
 function dotToMethod($dot)
 {
@@ -104,4 +110,17 @@ function dotToClass($dot)
     return '\\' . implode('\\', $class);
 }
 
+// 根据dot键名获取数组数据
+function getDataByDot($data, $dot)
+{
+    // 一层一层搜索键值数组
+    $dot = explode('.', $dot);
+    foreach ($dot as $key) {
+        if (!isset($data[$key])) {
+            throw new Exception('has no item:' . $key);
+        }
+        $data = $data[$key];
+    }
+    return $data;
+}
 

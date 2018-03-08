@@ -25,12 +25,12 @@ class Config
 
     public function get($config)
     {
-        $config = explode('.', $config, 2);
+        $config = explode('.', $config, 2);var_dump($config);
         $domain = array_shift($config);
         if (!isset($this->config[$domain])) {
             $this->config[$domain] = $this->loadFile($domain);
         }
-        return $this->dataByIndex($this->config[$domain], $config);
+        return getDataByDot($this->config[$domain], array_shift($config));
     }
 
     public function loadFile($domain)
@@ -55,18 +55,6 @@ class Config
             is_file($localFile) && $paths[] = $localFile;
         }
         return $paths;
-    }
-
-    private function dataByIndex($data, $index)
-    {
-        // 一层一层搜索键值数组
-        foreach ($index as $key) {
-            if (!isset($data[$key])) {
-                throw new Exception('has no item:' . $key);
-            }
-            $data = $data[$key];
-        }
-        return $data;
     }
 }
 
