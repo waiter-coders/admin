@@ -1,5 +1,5 @@
 {
-  "name": "app/sample",
+  "name": "waiterphp/admin",
   "description": "this is app sample app",
   "type": "project",
   "require": {
