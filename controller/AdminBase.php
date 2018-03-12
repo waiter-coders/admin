@@ -27,9 +27,7 @@ class AdminBase extends Base
         $menu = $this->model('web.menu')->getAll();
         $menu = $this->filterMenuByPower($menu, $this->power);
         $currentMenu = $this->model('web.menu')->current();
-        if (empty($menu)) {
-            throw new Exception('menu config not set');
-        }
+        assertOrException(!empty($menu), 'menu config not set');
         $this->menu = array('list'=>$menu, 'current'=>$currentMenu);
         // 分页标签
 
@@ -112,5 +110,10 @@ class AdminBase extends Base
     {
         $configName = ucfirst($configName).'Config';
         return new $configName($dao);
+    }
+
+    protected function paging($dao)
+    {
+        return new \AdminPaging($dao);
     }
 }

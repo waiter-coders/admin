@@ -5,8 +5,7 @@ class App_Engine_Base
 
     protected $config = array();
     protected $isInit = false;
-    protected $response = '';
-    protected $exceptionCallback = null;
+    protected $response = null;
 
     public function __construct()
     {
@@ -24,7 +23,7 @@ class App_Engine_Base
         return isset($this->sets[$key]) ? $this->sets[$key] : null;
     }
 
-    public function register($event, $method)
+    public function bind($event, $method)
     {
         Event::register($event, $method);
     }
@@ -51,20 +50,8 @@ class App_Engine_Base
 
     public function response(callable $callback)
     {
-        $this->response = $callback($this->response);
+        $callback($this->response);
         return $this;
-    }
-
-    public function exception(callable $callback)
-    {
-        $this->exceptionCallback = $callback;
-    }
-
-    public function __destruct()
-    {
-        if (!empty($this->response)) {
-            echo !is_string($this->response) ? json_encode($this->response) : $this->response;
-        }
     }
 
     protected function init()

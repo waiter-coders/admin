@@ -113,7 +113,7 @@ function dotToClass($dot)
 function getDataByDot($data, $dot)
 {
     // 一层一层搜索键值数组
-    $dot = explode('.', $dot);
+    $dot = empty($dot) ? array() : explode('.', $dot);
     foreach ($dot as $key) {
         assertOrException(isset($data[$key]), 'has no item:' . $key);
         $data = $data[$key];

@@ -1,7 +1,7 @@
 <?php
 class Filter
 {
-    public static function data($data)
+    public static function create($data)
     {
         return new self($data);
     }

@@ -25,7 +25,7 @@ class Config
 
     public function get($config)
     {
-        $config = explode('.', $config, 2);var_dump($config);
+        $config = explode('.', $config, 2);
         $domain = array_shift($config);
         if (!isset($this->config[$domain])) {
             $this->config[$domain] = $this->loadFile($domain);

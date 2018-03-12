@@ -3,6 +3,15 @@ namespace Controller;
 
 class Base
 {
+    protected $request = null;
+    protected $post = null;
+
+    public function __construct()
+    {
+        $this->request = \Filter::create($_GET);
+        $this->post = \Filter::create($_POST);
+    }
+
     protected function model($class)
     {
         return \Instance::get('model.' . $class);
@@ -15,26 +24,11 @@ class Base
 
     protected function render($template, $params)
     {
-        return \View::fetch();
-    }
-
-    protected function success($response)
-    {
-        echo json_encode(array('code'=>0, 'data'=>$response));
+        echo \View::fetch($template, $params);
     }
 
     protected function config($config)
     {
-        return \App::current()->config()->get($config);
-    }
-
-    protected function request()
-    {
-        return \Filter::data($_GET);
-    }
-
-    function post()
-    {
-        return \Filter::data($_POST);
+        return \Config::instance('app')->get($config);
     }
 }

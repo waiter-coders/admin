@@ -55,10 +55,11 @@ class View
         $view->render($template, $params);
     }
 
-    public function fetch($template, $params)
+    public static function fetch($template, $params)
     {
         $view = self::instance();
-        $params = (!empty(self::$config['init'])) ? self::$config['init'] : array();
+        $initParams = (!empty(self::$config['init'])) ? self::$config['init'] : array();
+        $params = array_merge($initParams, $params);
         $params = array_merge($params, self::$params);
         return $view->fetch($template, $params);
     }
@@ -81,7 +82,7 @@ class View
     {
         // 没有包含域名的自动包含域名
         if (strncmp ($jumpUrl, 'http', 4)) {
-            $jumpUrl = Url::baseUrl() . '/' . ltrim($jumpUrl, '/');
+            $jumpUrl = \Url::baseUrl() . '/' . ltrim($jumpUrl, '/');
         }
 
         // 直接跳转
