@@ -5,8 +5,8 @@
 
 class Dao
 {
-    // 生产表对象
-    public static function factory($table, callable $callback)
+    //装载一个表对象
+    public static function load($table, callable $callback)
     {
         $daoConfig =  new DaoConfig($table);
         $callback($daoConfig);
@@ -21,15 +21,12 @@ class Dao
     /**
      * 对外访问接口
      */
-    protected $queryTable = '';
     protected $daoConfig = '';
-    private $tableFields = array();
 
     public function __construct(DaoConfig $daoConfig)
     {
         $this->daoConfig = $daoConfig;
         assertOrException($this->daoConfig->canWork(), 'dao config not enough');
-        $this->queryTable = table($this->daoConfig->table, $this->daoConfig->database);
         return true;
     }
 
@@ -37,6 +34,11 @@ class Dao
     /****************************
      * 虚拟表结构相关接口
      ****************************/
+
+    public function mainTable()
+    {
+        return table($this->daoConfig->table, $this->daoConfig->database);
+    }
 
     // 获取表字段
     public function getAllFields($hasInfo = false)
@@ -79,29 +81,6 @@ class Dao
     /*************************
      * 设置查询字段
      *************************/
-
-    // 多次存入，一次取出
-    public function with($args = null)
-    {
-        $args = is_array($args) ? $args : func_get_args();
-        if (empty($args)) {
-            return $this;
-        }
-        $fields = array();
-        $tables = array_unique(explode(',', implode(',', $args)));
-        foreach ($tables as $table) {
-            $fields = array_merge($fields, $this->tableFields($table));
-        }
-        return $this->field($fields);
-    }
-
-    // 获取所有字段
-    public function withAll()
-    {
-        $tables = array_keys($this->daoConfig->joinTables);
-        return call_user_func_array(array($this, 'with'), $tables);
-    }
-
     // 获取特定字段
     public function field($args = null)
     {
@@ -126,47 +105,25 @@ class Dao
      * 虚拟表数据获取相关接口
      **************************/
 
-    // 查找数据列表
-    public function search($offset, $length, $where = array(), $order = '') // 提供单独的子类可覆盖搜索接口
-    {
-        return $this->getList($offset, $length, $where, $order);
-    }
-
     // 获取大于某主键id值的列表数据
     public function listAfterId($id, $length, $where = array(), $order = '')
     {
-        $where[$this->primaryKey() . ' gt'] = $id;
+        $where[$this->primaryKey() . ' >'] = $id;
         return $this->getList(0, $length, $where, $order);
     }
 
     // 获取小于某主键id值的列表数据
     public function listBeforeId($id, $length, $where = array(), $order = '')
     {
-        $where[$this->primaryKey() . ' lt'] = $id;
+        $where[$this->primaryKey() . ' <'] = $id;
         return $this->getList(0, $length, $where, $order);
     }
 
-    public function paging($pageNum, $pageSize, $where = array(), $order = '')
-    {
-        $totalNum = $this->queryTable->count($this->daoConfig->primaryKey, $this->covertCondition($where));
-        if ($totalNum == 0) {
-            return array(
-                'list'=>array(),
-                'totalNum'=>0,
-            );
-        }
-        $start = ($pageNum - 1) * $pageSize;
-        $list = $this->getList($start, $pageSize, $where, $order);
-        return array(
-            'list'=>$list,
-            'totalNum'=>ceil($totalNum / $pageSize),
-        );
-    }
 
     // 根据主键id获取单条记录
     public function infoById($id)
     {
-        $data = $this->getList(0, 1, array($this->daoConfig->primaryKey=>$id));
+        $data = $this->getList('*', array($this->daoConfig->primaryKey=>$id), '', 0, 1);
         return (!empty($data)) ? $data[0] : array();
     }
 
@@ -177,28 +134,19 @@ class Dao
         return (!empty($data)) ? $data[0] : array();
     }
 
-    public function detail($id)
+    public function detail($id, $detailRange = 'detail')
     {
-        $data = $this->withAll()->getList(0, 1, array($this->daoConfig->primaryKey=>$id));
+        $data = $this->getList(0, 1, array($this->daoConfig->primaryKey=>$id));
         return (!empty($data)) ? $data[0] : array();
     }
 
-    private function getList($offset, $length, $where = array(), $order = '')
+    public function getList($fields = '*', $where = array(), $order = '', $offset = 0, $length = 100)
     {
-        $where['limit'] = $offset . ',' . $length;
-        if (empty($order)) {
-            $order = isset($this->daoConfig->defaultQuery['order']) ? $this->daoConfig->defaultQuery['order'] : $this->primaryKey() . ' desc';
-        }
-        $where['order'] = $order;
-
         // 查询字段处理
-        $fields = $this->tableFields($this->daoConfig->table);
-        $fields = array_unique(array_merge($fields, $this->field()));
-        $condition = $where;
-        $condition['field'] = implode(',', $this->toTrueFields($fields));
+        $fields = (empty($fields) || $fields == '*') ? $this->getBaseFields() : explode(',', $fields);
 
         // 表对象处理
-        $table = $this->queryTable;
+        $table = $this->mainTable();
         $selectTables = $this->fieldsTables($fields);
         foreach ($selectTables as $selectTable) {
             if ($selectTable == $this->daoConfig->table) { // join查询跳过主表
@@ -213,16 +161,18 @@ class Dao
         }
 
         // 查询条件处理
-        $condition = $this->covertCondition($condition);
-        $condition = array_merge($this->daoConfig->defaultQuery, $condition);
+        $where = $this->toTrueWhere($where);
+        $where = array_merge($this->daoConfig->defaultQuery, $where);
         if (!empty($this->daoConfig->softDeleteField)) {
-            $condition[$this->daoConfig->softDeleteField] = 0;
+            $where[$this->daoConfig->softDeleteField] = 0;
         }
 
         // 查询
-        $data = $table->where($condition)->fetchAll();
-        return $data;
-        return DaoPipeline::iteration($data, $this->daoConfig, 'toShow');
+        $fields = implode(',', $this->toTrueFields($fields));
+        $defaultOrder = isset($this->daoConfig->defaultQuery['order']) ? $this->daoConfig->defaultQuery['order'] : $this->primaryKey() . ' desc';
+        $order = empty($order) ? $defaultOrder : $order;
+        return $table->select($fields)->where($where)->orderBy($order)->limit($offset . ',' . $length)->fetchAll();
+//        return DaoPipeline::iteration($data, $this->daoConfig, 'toShow');
     }
 
     public function appendInfoByIds($fields, array &$data, $dataField = null, $joinField = null)
@@ -242,9 +192,9 @@ class Dao
 
         foreach ($data as $key=>$value) {
             assertOrException(isset($value[$dataField]), 'field not exist');
-            $record = $this->queryTable->getRow(array(
+            $record = $this->mainTable()->where(array(
                 $joinField=>$value[$dataField],
-            ));
+            ))->fetchRow();
             $data[$key] = $value + $record;
         }
         return true;
@@ -255,11 +205,11 @@ class Dao
      *****************************/
 
     // 更新信息
-    public function update($update)
+    public function update($update, $where)
     {
 
         $update = DaoPipeline::iteration($update, $this->daoConfig, 'toDb');
-        return $this->queryTable->update($update);
+        return $this->mainTable()->where($where)->update($update);
     }
 
     // 根据主键id更新信息
@@ -296,7 +246,7 @@ class Dao
         $insert = $this->groupByTables($insert);
         $mainInsert = $insert[$this->daoConfig->table];
         $mainInsert = array_merge($mainInsert, $this->daoConfig->defaultQuery);
-        $mainId = $this->queryTable->insert($mainInsert);
+        $mainId = $this->mainTable()->insert($mainInsert);
         unset($insert[$this->daoConfig->table]);
         foreach ($insert as $table=>$data) {
             assertOrException(isset($this->daoConfig->joinTables[$table]), 'not set join info'.$table);
@@ -331,9 +281,9 @@ class Dao
         }
         // 硬删除
         else {
-            return $this->queryTable->delete(array(
-            $this->daoConfig->primaryKey=>$id,
-            ));
+            return $this->mainTable()->where(array(
+                $this->daoConfig->primaryKey=>$id,
+            ))->delete();
         }
     }
 
@@ -432,23 +382,18 @@ class Dao
         return isset($params['trueField']) ? $params['trueField'] : $table . '.' . $field;
     }
 
-    private function covertCondition($condition)
+    private function toTrueWhere($where)
     {
-        $others = array('field'=>'', 'order'=>'', 'group'=>'', 'limit'=>'');
-        foreach ($condition as $field=>$params) {
-            if (isset($others[$field])) {
-                continue;
-            }
+        foreach ($where as $field=> $params) {
             list($trueField, $tip) = explode(' ', $field . ' ');
             $trueField = trim($trueField);$tip = trim($tip);
             $trueField = trim($trueField);$tip = trim($tip);
             $trueField = $this->trueField($trueField);
             $trueField = empty($tip) ? $trueField : $trueField . ' ' . $tip;
-            unset($condition[$field]);
-            $condition[$trueField] = $params;
+            unset($where[$field]);
+            $where[$trueField] = $params;
         }
-        $condition = array_merge($this->daoConfig->defaultQuery, $condition);
-        return $condition;
+        return $where;
     }
 
     private function groupByTables($data)
@@ -499,9 +444,10 @@ class Dao
     public function check($value, $filters)
     {
         foreach ($filters as $filter=>$params) {
-            $isLegal = DaoFilter::get($filter)->check($value, $params);
-            assertOrException($isLegal, DaoFilter::get($filter)->errorMessage());
+            $isLegal = DaoFilter::check($filter, $value, $params);
+//            assertOrException($isLegal, DaoFilter::get($filter)->errorMessage());
         }
+        return true;
     }
 }
 
