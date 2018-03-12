@@ -1,26 +1,21 @@
 <?php
 /**
  * 虚拟表
- *
- * 隐藏掉实体表的表名，数据库等信息，
- * 虚拟表都可以是几张实体表的Join链接
- *
- * 问题：
- * 1、虚字段的不对应
- * 2. 默认字段的扩展
  */
 
 class Dao
 {
-    /**
-     * 静态管理方法
-     */
-
-    // 虚拟表工厂
-    public static function newConfig($table = '')
+    // 生产表对象
+    public static function factory($table, callable $callback)
     {
         $daoConfig =  new DaoConfig($table);
-        return $daoConfig;
+        $callback($daoConfig);
+        return new self($daoConfig);
+    }
+
+    public static function newConfig()
+    {
+        return new DaoConfig();
     }
 
     /**
@@ -30,27 +25,14 @@ class Dao
     protected $daoConfig = '';
     private $tableFields = array();
 
-    public function __construct(DaoConfig $daoConfig = null)
+    public function __construct(DaoConfig $daoConfig)
     {
-        // 没有config的则通过load加载子类初始化
         $this->daoConfig = $daoConfig;
-        if (empty($this->daoConfig)) {
-            $this->daoConfig = new DaoConfig();
-            $this->load();
-        }
-        // 测试配置文件是否可用
-        if (!$this->daoConfig->canWork()) {
-            throw new Exception('dao config not enough');
-        }
-        // 初始化dao类变量
+        assertOrException($this->daoConfig->canWork(), 'dao config not enough');
         $this->queryTable = table($this->daoConfig->table, $this->daoConfig->database);
         return true;
     }
 
-    protected function load()
-    {
-        return false;
-    }
 
     /****************************
      * 虚拟表结构相关接口
@@ -128,9 +110,7 @@ class Dao
         if (!empty($args)) {
             $args = explode(',', implode(',', $args));
             foreach ($args as $field) {
-                if (!isset($this->daoConfig->fields[$field])) {
-                    throw new Exception('field not exist:'.$field);
-                }
+                assertOrException(isset($this->daoConfig->fields[$field]), 'field not exist:'.$field);
                 $fields[] = $field;
             }
             return $this;
@@ -224,9 +204,8 @@ class Dao
             if ($selectTable == $this->daoConfig->table) { // join查询跳过主表
                 continue;
             }
-            if (!isset($this->daoConfig->joinTables[$selectTable])) { // 检查是否存在join table的配置
-                throw new Exception('no join table config:'.$selectTable);
-            }
+            // 检查是否存在join table的配置
+            assertOrException(isset($this->daoConfig->joinTables[$selectTable]), 'no join table config:'.$selectTable);
             $join = $this->daoConfig->joinTables[$selectTable];
             $tableName = $join['table'] . ' as ' . $selectTable;
             $on = sprintf('%s.%s = %s.%s', $this->daoConfig->table, $join['mainField'], $selectTable, $join['joinField']);
@@ -258,15 +237,11 @@ class Dao
         // 检查是否有字段重名
         $fieldsArray = explode(',', $fields);
         foreach ($fieldsArray as $field) {
-            if (isset($data[0][$field])) {
-                throw new Exception('name exist');
-            }
+            assertOrException(!isset($data[0][$field]), 'name exist');
         }
 
         foreach ($data as $key=>$value) {
-            if (!isset($value[$dataField])) {
-                throw new Exception('filed not exist');
-            }
+            assertOrException(isset($value[$dataField]), 'field not exist');
             $record = $this->queryTable->getRow(array(
                 $joinField=>$value[$dataField],
             ));
@@ -306,9 +281,7 @@ class Dao
     // 根据某一字段值更新信息
     public function updateField($id, $key, $value)
     {
-        if (!$this->dataIsSafe(array($key=>$value), $message)) {
-            throw new Exception($message);
-        }
+        assertOrException($this->dataIsSafe(array($key=>$value), $message), $message);
         return $this->updateById($id, array(
             $key=>$value,
         ));
@@ -318,9 +291,7 @@ class Dao
     public function insert($insert)
     {
         $insert = array_merge($this->getDefaultValues(), $insert);
-        if (!$this->dataIsSafe($insert, $message)) {
-            throw new Exception($message);
-        }
+        assertOrException($this->dataIsSafe($insert, $message), $message);
         $insert = DaoPipeline::iteration($insert, $this->daoConfig, 'toDb');
         $insert = $this->groupByTables($insert);
         $mainInsert = $insert[$this->daoConfig->table];
@@ -328,9 +299,7 @@ class Dao
         $mainId = $this->queryTable->insert($mainInsert);
         unset($insert[$this->daoConfig->table]);
         foreach ($insert as $table=>$data) {
-            if (!isset($this->daoConfig->joinTables[$table])) { // join表转化为真表
-                throw new Exception('not set join info'.$table);
-            }
+            assertOrException(isset($this->daoConfig->joinTables[$table]), 'not set join info'.$table);
             $join = $this->daoConfig->joinTables[$table];
             $data[$join['joinField']] = $mainId;
             table($join['table'])->insert($data);
@@ -432,9 +401,7 @@ class Dao
     {
         $tables = array();
         foreach ($fields as $field) {
-            if (!isset($this->daoConfig->fields[$field])) {
-                throw new Exception('field config not set:'.$field);
-            }
+            assertOrException(isset($this->daoConfig->fields[$field]), 'field config not set:'.$field);
             $config = $this->daoConfig->fields[$field];
             if (isset($config['table'])) {
                 $tables[$config['table']] = 1;
@@ -533,10 +500,7 @@ class Dao
     {
         foreach ($filters as $filter=>$params) {
             $isLegal = DaoFilter::get($filter)->check($value, $params);
-            if (!$isLegal) {
-                $message = DaoFilter::get($filter)->errorMessage();
-                throw new Exception($message);
-            }
+            assertOrException($isLegal, DaoFilter::get($filter)->errorMessage());
         }
     }
 }
@@ -621,9 +585,7 @@ class DaoConfig
     {
         $args = func_get_args();
         $field = array_shift($args);
-        if (isset($this->fields[$field])) {
-            throw new Exception('field all ready set:'.$field);
-        }
+        assertOrException(!isset($this->fields[$field]), 'field all ready set:'.$field);
 //        $this->fields[$field]['trueField'] = $field;
         $this->analyzeFieldArgs($field, $args);
         $this->safeCheck($field);
@@ -636,9 +598,7 @@ class DaoConfig
 
     public function setFieldEnum($field, $enum)
     {
-        if (!isset($this->fields[$field])) {
-            throw new Exception('not set field:'.$field);
-        }
+        assertOrException(isset($this->fields[$field]), 'not set field:'.$field);
         $this->fields[$field]['enum'] = $enum;
         $this->fields[$field]['type'] = 'enum';
     }
@@ -661,9 +621,7 @@ class DaoConfig
 
     public function setFieldDefault($field, $value)
     {
-        if (!isset($this->fields[$field])) {
-            throw new Exception('not set field:'.$field);
-        }
+        assertOrException(isset($this->fields[$field]), 'not set field:'.$field);
         $this->fields[$field]['default'] = $value;
     }
 
@@ -719,46 +677,16 @@ class DaoConfig
         $this->filters[$field][$type] = $params;
     }
 
-    public function getRegex($regexKey) {
-        $this->validation = empty($this->validation) ? Config::get('validation') : $this->validation;
-        $regexArr = explode('[', $regexKey);
-        $regex = $regexArr[0];
-        $range = isset($regexArr[1]) ? rtrim($regexArr[1], ']') : '';
-
-        $regexstr = '';
-        $message = '';
-        if (empty($range) || !$this->validation[$regex]['isLength']) {
-            return $this->validation[$regex];
-        } elseif (strpos($range, ':') === false) {
-            $regexstr = $this->validation[$regex]['regex'] . '{' . $range . '}$';
-            $message = $this->validation[$regex]['message'] . ',并且长度必须为' . $range . '位';
-        } elseif (strpos($range, ':') !== false) {
-            list($min, $max) = explode(':', $range);
-            $regexstr = $this->validation[$regex]['regex'] . '{' . (int)$min . ','. $max. '}$';
-            $message = !empty($max) && !empty($min) ? ',长度应该为' . $min . '-' .$max. '位' : '';
-            $message = empty($max) ? ',长度最少为' . $min . '位' : $message;
-            $message = empty($min) ? ',长度最多为' . $max . '位' : $message;
-            $message = $this->validation[$regex]['message'] . $message;
-        }
-        return array('regex'=>$regexstr, 'message'=>$message);
-    }
-
     public function canWork()
     {
-        if (empty($this->table)) {
-            throw new Exception('not set table');
-        }
-        if (empty($this->primaryKey)) {
-            throw new Exception('primary key not set');
-        }
+        assertOrException(!empty($this->table), 'not set table');
+        assertOrException(!empty($this->primaryKey), 'primary key not set');
         return true;
     }
 
     public function setSoftDelete($field)
     {
-        if (!isset($this->fields[$field])) {
-            throw new Exception('soft delete field not exist:' . $field);
-        }
+        assertOrException(isset($this->fields[$field]), 'soft delete field not exist:' . $field);
         $this->softDeleteField = $field;
     }
 
@@ -787,7 +715,7 @@ class DaoConfig
                     continue;
                 }
                 // 含有中文的被认为是字段名
-                if (is_word($arg)) {
+                if (preg_match("/[\x7f-\xff]/", $arg)) { // 暂时只是utf8
                     $this->fields[$field]['name'] = $arg;
                     continue;
                 }
@@ -831,9 +759,7 @@ class DaoConfig
     {
         $params = $this->fields[$field];
         if ($params['type'] == 'varchar') {
-            if (!isset($params['length'])) {
-                throw new Exception('varchar mast set length:'.$field);
-            }
+            assertOrException(isset($params['length']), 'varchar mast set length:'.$field);
         }
     }
 
@@ -877,9 +803,7 @@ class DaoFilter
     public static function check($action, $value, $params)
     {
         if (is_string($action)) {
-            if (!isset(self::$defaultMethod[$action])) {
-                throw new Exception('not has action:' . $action);
-            }
+            assertOrException(isset(self::$defaultMethod[$action]), 'not has action:' . $action);
             return call_user_func(array('DaoFilter', $action), $value, $params);
         }
         if (is_callable($action)) {

@@ -75,6 +75,12 @@ class App_Engine_Base
             // 装载配置文件
             $this->config = Config::create($this->sets['path.config'], 'app');
 
+
+            // 初始化数据库
+            $database = $this->config->get('database');
+            assertOrException(!empty($database), 'database not set');
+            DB::register($database);
+
             // 设置状态
             $this->isInit = true;
             Event::trigger('app.init.end');

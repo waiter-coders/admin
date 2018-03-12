@@ -113,7 +113,7 @@ function dotToClass($dot)
 function getDataByDot($data, $dot)
 {
     // 一层一层搜索键值数组
-    $dot = empty($dot) ? array() : explode('.', $dot);
+    $dot = empty($dot) ? array() : explode('.', $dot);var_dump($dot);
     foreach ($dot as $key) {
         assertOrException(isset($data[$key]), 'has no item:' . $key);
         $data = $data[$key];
@@ -131,4 +131,10 @@ function assertOrException($boolean, $errorMessage, $code = 500)
 function lowerToUpper($class)
 {
 
+}
+
+// 语法糖
+function table($table, $name = 'default') // 数据库访问
+{
+    return DB::table($table, $name);
 }
