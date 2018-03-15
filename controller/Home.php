@@ -5,10 +5,11 @@ class Home extends \Controller\AdminBase
 {
     public function show()
     {
-//        echo \AdminPaging::baseUrl();
-//        echo $this->request->getInt('id', 12);
-//        $this->post->getInt('id');
-        var_dump($this->config('database'));
-//        return array();
+
+    }
+
+    public function getConfig()
+    {
+        return $this->model('record')->infoById(1);
     }
 }

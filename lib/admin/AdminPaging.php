@@ -195,14 +195,14 @@ class AdminPaging extends AdminTools
 
     private function expandPagingInfo($pagingInfo, $total, $sideNum = 3)
     {
-        $baseUrl = Url::all();
+        $baseUrl = Http::url();
         $preNum = max($pagingInfo['current'] - 1, 1);
         $nextNum = min($pagingInfo['current'] + 1, $total);
         $pagingInfo['total'] = $total;
-        $pagingInfo['firstUrl'] = Url::refreshUrlQuery($baseUrl, array('page'=>1));
-        $pagingInfo['lastUrl'] = Url::refreshUrlQuery($baseUrl, array('page'=>$total));
-        $pagingInfo['preUrl'] = Url::refreshUrlQuery($baseUrl, array('page'=>$preNum));
-        $pagingInfo['nextUrl'] = Url::refreshUrlQuery($baseUrl, array('page'=>$nextNum));
+        $pagingInfo['firstUrl'] = Http::refreshUrlQuery($baseUrl, array('page'=>1));
+        $pagingInfo['lastUrl'] = Http::refreshUrlQuery($baseUrl, array('page'=>$total));
+        $pagingInfo['preUrl'] = Http::refreshUrlQuery($baseUrl, array('page'=>$preNum));
+        $pagingInfo['nextUrl'] = Http::refreshUrlQuery($baseUrl, array('page'=>$nextNum));
         $pagingInfo['pageRange'] = $this->getPageRange($total, $sideNum, $pagingInfo['current']);
         return $pagingInfo;
     }
@@ -221,7 +221,7 @@ class AdminPaging extends AdminTools
 
         $pageRange = array();
         foreach ($pageNumRange as $pageNum) {
-            $pageRange[$pageNum] = Url::refreshUrlQuery(Url::all(), array('page'=>$pageNum));
+            $pageRange[$pageNum] = Http::refreshUrlQuery(Http::url(), array('page'=>$pageNum));
         }
         return $pageRange;
     }

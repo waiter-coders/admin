@@ -40,7 +40,7 @@ class Config
         foreach ($files as $file) {
             $fileConfig = require $file;
             $fileConfig = empty($fileConfig) ? array() : $fileConfig;
-            $config = array_merge_cover($fileConfig, $config);
+            $config = array_merge_cover($config, $fileConfig);
         }
         return $config;
     }

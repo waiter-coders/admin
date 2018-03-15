@@ -16,28 +16,28 @@ class AdminBase extends Base
     public function __construct()
     {
         parent::__construct();
-        // 用户信息
-        $this->userId = $this->model('web.session')->userId();
-        $this->user = $this->model('web.session')->baseInfo();
-
-        // 权限
-        $this->power = $this->model('web.power')->getPower($this->userId);
-
-        // 菜单
-        $menu = $this->model('web.menu')->getAll();
-        $menu = $this->filterMenuByPower($menu, $this->power);
-        $currentMenu = $this->model('web.menu')->current();
-        assertOrException(!empty($menu), 'menu config not set');
-        $this->menu = array('list'=>$menu, 'current'=>$currentMenu);
-        // 分页标签
-
-        // url信息
-        list($domain, $action) = AdminTools::domainAndAction();
-        $this->url = array(
-            'base'=>\Url::baseUrl(),
-            'domain'=>$domain,
-            'action'=>$action,
-        );
+//        // 用户信息
+//        $this->userId = $this->model('web.session')->userId();
+//        $this->user = $this->model('web.session')->baseInfo();
+//
+//        // 权限
+//        $this->power = $this->model('web.power')->getPower($this->userId);
+//
+//        // 菜单
+//        $menu = $this->model('web.menu')->getAll();
+//        $menu = $this->filterMenuByPower($menu, $this->power);
+//        $currentMenu = $this->model('web.menu')->current();
+//        assertOrException(!empty($menu), 'menu config not set');
+//        $this->menu = array('list'=>$menu, 'current'=>$currentMenu);
+//        // 分页标签
+//
+//        // url信息
+//        list($domain, $action) = AdminTools::domainAndAction();
+//        $this->url = array(
+//            'base'=>\Url::baseUrl(),
+//            'domain'=>$domain,
+//            'action'=>$action,
+//        );
     }
 
     private function filterMenuByPower($menu, $power)
@@ -84,7 +84,7 @@ class AdminBase extends Base
     protected function getValue($field)
     {
         if ($field == 'controllerUrl') {
-            return AdminTools::controllerUrl();
+            return \AdminTools::controllerUrl();
         }
         return $field;
     }

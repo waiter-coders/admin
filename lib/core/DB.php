@@ -592,12 +592,16 @@ class PdoDatabaseInstance extends DatabaseInstance
             $connectType = 'write';
         }
         if (!isset($this->connectionPool[$connectType])) {
-            $config = $this->selectConnectConfig($connectType);
-            $dsn = sprintf('%s:host=%s;dbname=%s;port=%s;',$config['driver'], $config['host'], $config['database'], $config['port']);
-            $connection = @new \PDO($dsn, $config['username'], $config['password']);
-            $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $connection->exec("SET NAMES '{$config['charset']}'");
-            $this->connectionPool[$connectType] = $connection;
+            try {
+                $config = $this->selectConnectConfig($connectType);
+                $dsn = sprintf('%s:host=%s;dbname=%s;port=%s;',$config['driver'], $config['host'], $config['database'], $config['port']);
+                $connection = new \PDO($dsn, $config['username'], $config['password']);
+                $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $connection->exec("SET NAMES '{$config['charset']}'");
+                $this->connectionPool[$connectType] = $connection;
+            } catch (PDOException $e) {
+                throw new Exception($e->getMessage(), $e->getCode());
+            }
         }
         return $this->connectionPool[$connectType];
     }

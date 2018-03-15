@@ -1,6 +1,9 @@
 <?php
 /**
  * 虚拟表
+ *
+ * 暂时只支持mysql字段
+ *
  */
 
 class Dao
@@ -13,6 +16,7 @@ class Dao
         return new self($daoConfig);
     }
 
+    // 生成配置对象，以便实例化Dao
     public static function newConfig()
     {
         return new DaoConfig();
@@ -173,6 +177,23 @@ class Dao
         $order = empty($order) ? $defaultOrder : $order;
         return $table->select($fields)->where($where)->orderBy($order)->limit($offset . ',' . $length)->fetchAll();
 //        return DaoPipeline::iteration($data, $this->daoConfig, 'toShow');
+    }
+
+    public function paging($pageNum, $pageSize, $where = array(), $order = '')
+    {
+        $totalNum = $this->mainTable()->where($where)->count($this->daoConfig->primaryKey);
+        if ($totalNum == 0) {
+            return array(
+                'list'=>array(),
+                'totalNum'=>0,
+            );
+        }
+        $start = ($pageNum - 1) * $pageSize;
+        $list = $this->getList('*', $where, $order, $start, $pageSize);
+        return array(
+            'list'=>$list,
+            'totalNum'=>ceil($totalNum / $pageSize),
+        );
     }
 
     public function appendInfoByIds($fields, array &$data, $dataField = null, $joinField = null)
@@ -479,8 +500,8 @@ class DaoConfig
         'varchar'=>'string',
         'text'=>'string',
         'char'=>'string',
-        'datetime'=>'date',
-        'timestamp'=>'date',
+        'datetime'=>'datetime',
+        'timestamp'=>'datetime',
     );
     private static $extendFieldType = array(
         'html'=>array('type'=>'text', 'filter'=>'string', 'params'=>'html'),
@@ -504,7 +525,7 @@ class DaoConfig
         $this->setTable($table);
     }
 
-    public function setDatabase(array $database)
+    public function setDatabase($database)
     {
         $this->database = $database;
     }
@@ -532,7 +553,6 @@ class DaoConfig
         $args = func_get_args();
         $field = array_shift($args);
         assertOrException(!isset($this->fields[$field]), 'field all ready set:'.$field);
-//        $this->fields[$field]['trueField'] = $field;
         $this->analyzeFieldArgs($field, $args);
         $this->safeCheck($field);
         $this->appendDefaultFilters($field, $this->fields[$field]);
@@ -665,7 +685,7 @@ class DaoConfig
                     $this->fields[$field]['name'] = $arg;
                     continue;
                 }
-                // 真实字段识别
+                // join字段
                 if ($pos = strpos($arg, '.')) {
                     $this->fields[$field]['trueField'] = $arg;
                     $table = substr($arg, 0, $pos);
@@ -686,7 +706,7 @@ class DaoConfig
             }
             // 数据被认为是map
             if (is_array($arg)) {
-
+                $this->fields[$field]['range'] = $arg;
             }
             // 可调用函数
             if (is_callable($arg)) {

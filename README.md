@@ -14,3 +14,30 @@ npm install
 ```
 
 不熟悉vue，可以直接
+
+### 通用配置文件
+
+```json
+{
+  'search':{
+    'url':'',
+    'fields':[
+      {},
+      {}
+    ],
+  },
+  'actions':{
+    'list':[
+      {'click':'page', 'isDisabled':false, 'url':'', 'name':''}
+    ],
+  },
+  'table':{
+    'fields':{},
+    'actions':{},
+  },
+  'paging':{
+  
+  }
+}
+
+```

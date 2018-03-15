@@ -1,5 +1,5 @@
 <?php
-namespace \Controller\User;
+namespace Controller\User;
 
 class Login extends \Controller\AdminBase
 {

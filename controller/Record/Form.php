@@ -1,5 +1,5 @@
 <?php
-namespace \Controller\Record;
+namespace Controller\Record;
 
 class Form extends \Controller\AdminBase
 {

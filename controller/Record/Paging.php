@@ -1,46 +1,31 @@
 <?php
-namespace \Controller\Record;
+namespace Controller\Record;
 
 class Paging extends \Controller\AdminBase
 {
     private $dao;
-    private $paging;
+    private $config;
 
     public function __construct()
     {
         parent::__construct();
         // 数据源配置
-        $this->dao = $this->model('sample');
-
-        // 列表配置
-        $this->paging = $this->paging($this->dao);
+        $this->dao = $this->model('record');
+        $this->config = $this->generateConfig($this->dao);
     }
 
     public function show()
     {
-        $config = $this->getConfig();
-        $this->render('', $config);
+        $this->render('', $this->config);
     }
 
 
     public function getConfig()
     {
-        $this->paging->addPublicAction('add');
-        $this->paging->addItemAction('edit');
-        $this->paging->addItemAction('delete');
-        $this->paging->addItemAction('showTitle')->setName('标题')->setAjax()->setDisabled(function($record){
-            return false;
-        });
-        $this->paging->addItemAction('test')->setUrl('delete?@data.primaryKey=@data.id');
-        $this->paging->addItemAction('test')->setUrl('../SimpleEditor/show?@data.primaryKey=@data.id');
-        $this->paging->addItemAction('test')->setUrl('/Tree/Simple/show?@data.primaryKey=@data.id');
-        $this->paging->addItemAction('test')->setUrl('http://git.oschina.net/waiterall/waiterphp');
-        $this->paging->setPageSize(15);
-        $this->paging->setPageNum($this->request->getInt('page', 1));
-        return $this->paging->getParams();
+        return $this->config;
     }
 
-    public function getData()
+    public function getList()
     {
 
     }
@@ -73,6 +58,21 @@ class Paging extends \Controller\AdminBase
         return $id;
     }
 
+    private function generateConfig($dao)
+    {
+        $paging = new \AdminPaging($dao);
+        $paging->addPublicAction('add');
+        $paging->addItemAction('edit');
+        $paging->addItemAction('delete');
+        $paging->addItemAction('showTitle')->setName('标题')->setAjax()->setDisabled(function ($record) {
+            return false;
+        });
+        $paging->addItemAction('test')->setUrl('delete?@data.primaryKey=@data.id');
+        $paging->addItemAction('test')->setUrl('../SimpleEditor/show?@data.primaryKey=@data.id');
+        $paging->addItemAction('test')->setUrl('/Tree/Simple/show?@data.primaryKey=@data.id');
+        $paging->addItemAction('test')->setUrl('http://git.oschina.net/waiterall/waiterphp');
+        return $paging->getParams();
+    }
 
 
 }

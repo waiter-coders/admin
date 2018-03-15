@@ -1,5 +1,5 @@
 <?php
-namespace \Controller\Statistics;
+namespace Controller\Statistics;
 
 class Chart extends \Controller\AdminBase
 {

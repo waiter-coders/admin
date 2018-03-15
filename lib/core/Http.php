@@ -71,4 +71,30 @@ class Http
         return ($ajaxTab == 'xmlhttprequest') ? true : false;
     }
 
+    private static function splitQuery($query)
+    {
+        if (empty($query)) {
+            return array();
+        }
+        $return = array();
+        $query = explode('&', $query);
+        foreach ($query as $queryItem) {
+            $queryItem = explode('=', $queryItem);
+            $return[$queryItem[0]] = urldecode($queryItem[1]);
+        }
+        return $return;
+    }
+
+    public static function refreshUrlQuery($url, $updateQuery = array())
+    {
+        $url = parse_url($url);
+        $query = isset($url['query']) ? self::splitQuery($url['query']) : array();
+        $query = array_merge($query, $updateQuery);
+        $baseUrl = $url['scheme'] . '://' . $url['host'];
+        if (isset($url['path'])){
+            $baseUrl .= $url['path'];
+        }
+        return $baseUrl . '?' . http_build_query($query);
+    }
+
 }
