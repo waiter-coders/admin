@@ -19,23 +19,23 @@ npm install
 
 ```json
 {
-  'search':{
-    'url':'',
-    'fields':[
+  "search":{
+    "url":"",
+    "fields":[
       {},
       {}
-    ],
+    ]
   },
-  'actions':{
-    'list':[
-      {'click':'page', 'isDisabled':false, 'url':'', 'name':''}
-    ],
+  "actions":{
+    "list":[
+      {"click":"page", "isDisabled":false, "url":"", "name":""}
+    ]
   },
-  'table':{
-    'fields':{},
-    'actions':{},
+  "table":{
+    "fields":{},
+    "actions":{}
   },
-  'paging':{
+  "paging":{
   
   }
 }
