@@ -22,9 +22,9 @@ class Base
         return \Instance::get('service.' . $class);
     }
 
-    protected function render($template, $params)
+    protected function render($template, array $params)
     {
-        echo \View::fetch($template, $params);
+        echo \View::get('app')->fetch($template, $params);
     }
 
     protected function config($config)

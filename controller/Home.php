@@ -5,7 +5,9 @@ class Home extends \Controller\AdminBase
 {
     public function show()
     {
-
+        $this->render('home.html', array(
+            'name'=>'hello world',
+        ));
     }
 
     public function getConfig()

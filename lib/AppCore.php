@@ -75,11 +75,16 @@ class AppCore
             // 装载配置文件
             $this->config = Config::create($this->sets['path.config'], 'app');
 
-
-            // 初始化数据库
+            // 初始化基础库
             $database = $this->config->get('database');
-            assertOrException(!empty($database), 'database not set');
-            DB::register($database);
+            if (!empty($database)) {
+                DB::register($database);
+            }
+            $view = $this->config->get('view');
+            if (!empty($view)) {
+                View::register($view, 'app');
+            }
+
 
             // 设置状态
             $this->isInit = true;
@@ -117,6 +122,7 @@ class AppCore
             'path.events'=> $appPath . '/events',
             'path.model'=> $appPath . '/model',
             'path.service'=> $appPath . '/service',
+            'path.views.template'=> $appPath . '/template',
             'path.views.compile'=> $appPath . '/storage/views',
             'path.queue.consumer'=>$appPath . '/consumer',
             'path.shell'=> $appPath . '/shell',
