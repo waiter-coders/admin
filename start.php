@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Shanghai'); // 默认为东八区
 header("content-type;text/html;charset=utf8"); // 默认字符为utf8
 
 // 启动引擎自动装载机制
-Engine::addPath('Lib', __DIR__ . '/lib/core'); // 引擎核心类
+Engine::addPath('Lib', __DIR__ . '/lib'); // 引擎类
 spl_autoload_register(array('Engine', 'load'), true, true);
 
 // 尝试加载composer的自动装载

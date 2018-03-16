@@ -1,13 +1,11 @@
 <?php
-Engine::addPath('Lib',dirname(dirname(__DIR__)) . '/lib/app'); // 引擎应用类
-
 class App
 {
     private static $currentApp = null;
 
     public static function web()
     {
-        return self::$currentApp = new App_Engine_Web();
+        return self::$currentApp = new AppWebCore();
     }
 
     public static function Shell()
@@ -27,7 +25,7 @@ class App
 
     public static function create()
     {
-        return self::$currentApp = new App_Engine_Base();
+        return self::$currentApp = new AppCore();
     }
 
     public static function current()
@@ -37,17 +35,17 @@ class App
 }
 
 
-class Shell_App_Engine extends App_Engine_Base
+class Shell_App_Engine extends AppCore
 {
 
 }
 
-class Consumer_App_Engine extends App_Engine_Base
+class Consumer_App_Engine extends AppCore
 {
 
 }
 
-class WebSocket_App_Engine extends App_Engine_Base
+class WebSocket_App_Engine extends AppCore
 {
 
 }

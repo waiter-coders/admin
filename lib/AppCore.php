@@ -1,5 +1,5 @@
 <?php
-class App_Engine_Base
+class AppCore
 {
     protected $sets = array();
 
@@ -109,7 +109,7 @@ class App_Engine_Base
 
     private function defaultSets()
     {
-        $appPath = realpath(dirname(dirname(__DIR__)));
+        $appPath = realpath(dirname(__DIR__));
         return array(
             'path.config'=> $appPath . '/config',
             'path.routes'=> $appPath . '/routes',
