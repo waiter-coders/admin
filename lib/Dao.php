@@ -39,34 +39,9 @@ class Dao
      * 虚拟表结构相关接口
      ****************************/
 
-    public function mainTable()
+    public function table()
     {
         return table($this->daoConfig->table, $this->daoConfig->database);
-    }
-
-    // 获取表字段
-    public function getAllFields($hasInfo = false)
-    {
-        return $hasInfo ? $this->daoConfig->fields : array_keys($this->daoConfig->fields);
-    }
-
-    public function getBaseFields($hasInfo = false)
-    {
-        $reverseHidden = array_flip($this->daoConfig->detailFields);
-        $baseFields = array_diff_key($this->daoConfig->fields, $reverseHidden);
-        return $hasInfo ? $baseFields : array_keys($baseFields);
-    }
-
-    public function isReadonly($field)
-    {
-        return isset($this->daoConfig->readonlyFields[$field]);
-    }
-
-    public function getDetailFields($hasInfo = false)
-    {
-        $reverseHidden = array_flip($this->daoConfig->detailFields);
-        $extractFields = array_intersect_key($this->daoConfig->fields, $reverseHidden);
-        return $hasInfo ? $extractFields : array_keys($extractFields);
     }
 
     // 获取表主键
@@ -75,33 +50,43 @@ class Dao
         return $this->daoConfig->primaryKey;
     }
 
-    // 获取所有字段的过滤器
-    public function getFilters()
+    // 获取表字段
+    public function getAllFields()
     {
-        return $this->daoConfig->filters;
+        return array_keys($this->daoConfig->fields);
     }
 
-
-    /*************************
-     * 设置查询字段
-     *************************/
-    // 获取特定字段
-    public function field($args = null)
+    public function getMainFields()
     {
-        static $fields = array();
-        $args = is_array($args) ? $args : func_get_args();
-        if (!empty($args)) {
-            $args = explode(',', implode(',', $args));
-            foreach ($args as $field) {
-                assertOrException(isset($this->daoConfig->fields[$field]), 'field not exist:'.$field);
+        $fields = array();
+        foreach ($this->daoConfig->fields as $field=>$params) {
+            if (!isset($params['sub']) || empty($params['sub'])) {
                 $fields[] = $field;
             }
-            return $this;
-        } else {
-            $tmp = $fields;
-            $fields = array();
-            return $tmp;
         }
+        return $fields;
+    }
+
+    public function getSubFields($subName)
+    {
+        $fields = array();
+        foreach ($this->daoConfig->fields as $field=>$params) {
+            if (isset($params['sub']) && $params['sub'] == $subName) {
+                $fields[] = $field;
+            }
+        }
+        return $fields;
+    }
+
+    public function isReadonly($field)
+    {
+        return isset($this->daoConfig->fields[$field]['readonly']) && ($this->daoConfig->fields[$field]['readonly'] == true);
+    }
+
+    public function getFieldsParams(array $fields)
+    {
+        $fields = array_flip($fields);
+        return array_intersect_key($this->daoConfig->fields, $fields);
     }
 
 
@@ -110,58 +95,59 @@ class Dao
      **************************/
 
     // 获取大于某主键id值的列表数据
-    public function listAfterId($id, $length, $where = array(), $order = '')
+    public function listAfterId($id, $length, $fields = '*', $where = array(), $order = '')
     {
         $where[$this->primaryKey() . ' >'] = $id;
-        return $this->getList(0, $length, $where, $order);
+        return $this->getList($fields, $where, $order, 0, $length);
     }
 
     // 获取小于某主键id值的列表数据
-    public function listBeforeId($id, $length, $where = array(), $order = '')
+    public function listBeforeId($id, $length, $fields = '*', $where = array(), $order = '')
     {
         $where[$this->primaryKey() . ' <'] = $id;
-        return $this->getList(0, $length, $where, $order);
+        return $this->getList($fields, $where, $order, 0, $length);
     }
 
 
     // 根据主键id获取单条记录
-    public function infoById($id)
+    public function infoById($id, $fields = '*')
     {
-        $data = $this->getList('*', array($this->daoConfig->primaryKey=>$id), '', 0, 1);
+        $data = $this->getList($fields, array($this->daoConfig->primaryKey=>$id), '', 0, 1);
         return (!empty($data)) ? $data[0] : array();
     }
 
     // 根据某个字段的值获取单条记录
-    public function infoByField($value, $fieldName)
+    public function infoByField($fieldName, $value, $fields = '*')
     {
-        $data = $this->getList(0, 1, array($fieldName=>$value));
+        $data = $this->getList($fields, array($fieldName=>$value), '', 0, 1);
         return (!empty($data)) ? $data[0] : array();
     }
 
-    public function detail($id, $detailRange = 'detail')
+
+    public function detail($id, $subTables = '*')
     {
-        $data = $this->getList(0, 1, array($this->daoConfig->primaryKey=>$id));
-        return (!empty($data)) ? $data[0] : array();
+        $fields = (empty($subTables) || $subTables == '*') ? $this->getAllFields() : array_merge($this->getMainFields(), $this->getSubFields($subTables));
+        return $this->infoById($id, $fields);
     }
 
     public function getList($fields = '*', $where = array(), $order = '', $offset = 0, $length = 100)
     {
         // 查询字段处理
-        $fields = (empty($fields) || $fields == '*') ? $this->getBaseFields() : explode(',', $fields);
+        $fields = (empty($fields) || $fields == '*') ? $this->getMainFields() : explode(',', $fields);
 
         // 表对象处理
-        $table = $this->mainTable();
-        $selectTables = $this->fieldsTables($fields);
-        foreach ($selectTables as $selectTable) {
-            if ($selectTable == $this->daoConfig->table) { // join查询跳过主表
+        $tableDao = $this->table();
+        $tables = $this->selectTables($fields);
+        foreach ($tables as $table) {
+            if ($table == $this->daoConfig->table) { // join查询跳过主表
                 continue;
             }
             // 检查是否存在join table的配置
-            assertOrException(isset($this->daoConfig->joinTables[$selectTable]), 'no join table config:'.$selectTable);
-            $join = $this->daoConfig->joinTables[$selectTable];
-            $tableName = $join['table'] . ' as ' . $selectTable;
-            $on = sprintf('%s.%s = %s.%s', $this->daoConfig->table, $join['mainField'], $selectTable, $join['joinField']);
-            $table = $table->leftJoin($tableName)->on($on);
+            assertOrException(isset($this->daoConfig->joinTables[$table]), 'no join table config:'.$table);
+            $join = $this->daoConfig->joinTables[$table];
+            $tableName = $join['table'] . ' as ' . $table;
+            $on = sprintf('%s.%s = %s.%s', $this->daoConfig->table, $join['mainField'], $table, $join['joinField']);
+            $tableDao = $tableDao->leftJoin($tableName)->on($on);
         }
 
         // 查询条件处理
@@ -175,51 +161,10 @@ class Dao
         $fields = implode(',', $this->toTrueFields($fields));
         $defaultOrder = isset($this->daoConfig->defaultQuery['order']) ? $this->daoConfig->defaultQuery['order'] : $this->primaryKey() . ' desc';
         $order = empty($order) ? $defaultOrder : $order;
-        return $table->select($fields)->where($where)->orderBy($order)->limit($offset . ',' . $length)->fetchAll();
-//        return DaoPipeline::iteration($data, $this->daoConfig, 'toShow');
+        return $tableDao->select($fields)->where($where)->orderBy($order)->limit($offset . ',' . $length)->fetchAll();
+//        return RowPipeline::iteration($data, $this->daoConfig, 'toShow');
     }
 
-    public function paging($pageNum, $pageSize, $where = array(), $order = '')
-    {
-        $totalNum = $this->mainTable()->where($where)->count($this->daoConfig->primaryKey);
-        if ($totalNum == 0) {
-            return array(
-                'list'=>array(),
-                'totalNum'=>0,
-            );
-        }
-        $start = ($pageNum - 1) * $pageSize;
-        $list = $this->getList('*', $where, $order, $start, $pageSize);
-        return array(
-            'list'=>$list,
-            'totalNum'=>ceil($totalNum / $pageSize),
-        );
-    }
-
-    public function appendInfoByIds($fields, array &$data, $dataField = null, $joinField = null)
-    {
-        if (empty($dataField)) {
-            $dataField = $this->daoConfig->primaryKey;
-        }
-        if (empty($joinField)) {
-            $joinField = $this->daoConfig->primaryKey;
-        }
-
-        // 检查是否有字段重名
-        $fieldsArray = explode(',', $fields);
-        foreach ($fieldsArray as $field) {
-            assertOrException(!isset($data[0][$field]), 'name exist');
-        }
-
-        foreach ($data as $key=>$value) {
-            assertOrException(isset($value[$dataField]), 'field not exist');
-            $record = $this->mainTable()->where(array(
-                $joinField=>$value[$dataField],
-            ))->fetchRow();
-            $data[$key] = $value + $record;
-        }
-        return true;
-    }
 
     /*****************************
      * 数据更新相关接口
@@ -229,14 +174,14 @@ class Dao
     public function update($update, $where)
     {
 
-        $update = DaoPipeline::iteration($update, $this->daoConfig, 'toDb');
-        return $this->mainTable()->where($where)->update($update);
+        $update = RowPipeline::iteration($update, $this->daoConfig, 'toDb');
+        return $this->table()->where($where)->update($update);
     }
 
     // 根据主键id更新信息
     public function updateById($id, $update)
     {
-        $update = DaoPipeline::iteration($update, $this->daoConfig, 'toDb');
+        $update = RowPipeline::iteration($update, $this->daoConfig, 'toDb');
         $update = $this->groupByTables($update);
         foreach ($update as $table=>$data) {
             $idField = $this->daoConfig->primaryKey;
@@ -263,11 +208,11 @@ class Dao
     {
         $insert = array_merge($this->getDefaultValues(), $insert);
         assertOrException($this->dataIsSafe($insert, $message), $message);
-        $insert = DaoPipeline::iteration($insert, $this->daoConfig, 'toDb');
+        $insert = RowPipeline::iteration($insert, $this->daoConfig, 'toDb');
         $insert = $this->groupByTables($insert);
         $mainInsert = $insert[$this->daoConfig->table];
         $mainInsert = array_merge($mainInsert, $this->daoConfig->defaultQuery);
-        $mainId = $this->mainTable()->insert($mainInsert);
+        $mainId = $this->table()->insert($mainInsert);
         unset($insert[$this->daoConfig->table]);
         foreach ($insert as $table=>$data) {
             assertOrException(isset($this->daoConfig->joinTables[$table]), 'not set join info'.$table);
@@ -279,16 +224,22 @@ class Dao
     }
 
     // 根据Id更新和替换
-    public function replaceById($id, $refresh)
+    public function replaceById($field, $value, $refresh)
     {
-        $hasId = $this->getRow(array(
-            $this->primaryKey=>$id,
-        ));
-        if ($hasId) {
-            return $this->updateById($id, $refresh);
-        } else {
-            return $this->insert($refresh);
-        }
+        $currentDao = $this;
+        DB::transaction(function() use($currentDao, $field, $value, $refresh){
+            $hasId = $currentDao->table()->select($currentDao->primaryKey())->where(array(
+                $field=>$value,
+            ))->fetchColumn();
+            if ($hasId) {
+                return $currentDao->update($refresh, array(
+                    $field=>$value,
+                ));
+            } else {
+                $refresh[$field] = $value;
+                return $currentDao->insert($refresh);
+            }
+        });
     }
 
     // 删除新纪录
@@ -302,45 +253,12 @@ class Dao
         }
         // 硬删除
         else {
-            return $this->mainTable()->where(array(
+            return $this->table()->where(array(
                 $this->daoConfig->primaryKey=>$id,
             ))->delete();
         }
     }
 
-    public function setDefaultQuery($condition)
-    {
-        $this->daoConfig->defaultQuery = $condition;
-    }
-
-    private function dataIsSafe(array $values, &$message = '')
-    {
-        foreach ($values as $field=>$value) {
-            // 字段属性检测
-//            if (isset($this->get)) disable过滤
-
-            // 过滤器合法检测
-            if (isset($this->daoConfig->filters[$field])) {
-
-            }
-        }
-        return true;
-    }
-
-
-
-    /**************************************
-     * 缓存计划
-     **************************************/
-    public function cache()
-    {
-
-    }
-
-    public function cancelCache()
-    {
-
-    }
 
     /**
      * 私有函数
@@ -368,7 +286,7 @@ class Dao
         return isset($this->tableFields[$table]) ? $this->tableFields[$table] : array();
     }
 
-    private function fieldsTables(array $fields)
+    private function selectTables(array $fields)
     {
         $tables = array();
         foreach ($fields as $field) {
@@ -470,6 +388,11 @@ class Dao
         }
         return true;
     }
+
+    private function dataIsSafe()
+    {
+        return true;
+    }
 }
 
 
@@ -483,14 +406,11 @@ class DaoConfig
     public $database = null;
     public $fields = array(); // 字段基础信息
     public $defaultQuery = array(); // 默认查询
-    public $detailFields = array(); // 简要信息中不展示
     public $readonlyFields = array(); // 不可被外部修改的字段
-    public $virtualField = array(); // 虚拟字段（外部可见，但内部其实没有）
     public $filters = array(); // 数据过滤器
-    public $processing = array(); // 数据处理器
+    public $format = array(); // 数据返回至标准化
     public $joinTables = array(); // 连接从表
     public $softDeleteField = false; // 软删除标识字段，默认为不存在
-
 
     private static $baseFieldType = array(
         'int'=>'number',
@@ -498,11 +418,14 @@ class DaoConfig
         'smallint'=>'number',
         'bigint'=>'number',
         'varchar'=>'string',
-        'text'=>'string',
         'char'=>'string',
+        'text'=>'string',
         'datetime'=>'datetime',
+        'date'=>'date',
         'timestamp'=>'datetime',
+        'enum'=>'',
     );
+
     private static $extendFieldType = array(
         'html'=>array('type'=>'text', 'filter'=>'string', 'params'=>'html'),
         'json'=>array('type'=>'varchar', 'filter'=>'string', 'params'=>'json'),
@@ -535,16 +458,15 @@ class DaoConfig
         $this->table = $table;
     }
 
-    public function setPrimaryKey($primaryKey)
+    public function setPrimaryKey($primaryKey, $name = 'id', $type = 'int', $unsigned = true)
     {
         $this->primaryKey = $primaryKey;
         $this->fields[$primaryKey] = array(
-            'name'=>'id',
-            'type'=>'int',
-            'unsigned'=>true,
+            'name'=>$name,
+            'group'=>'base',
+            'type'=>$type,
+            'unsigned'=>$unsigned,
             'primaryKey'=>true,
-            'pipeline'=>'int',
-            'isVirtual'=>false,
         );
     }
 
@@ -553,7 +475,7 @@ class DaoConfig
         $args = func_get_args();
         $field = array_shift($args);
         assertOrException(!isset($this->fields[$field]), 'field all ready set:'.$field);
-        $this->analyzeFieldArgs($field, $args);
+        $this->fields[$field] = $this->extractFieldParams($args);
         $this->safeCheck($field);
         $this->appendDefaultFilters($field, $this->fields[$field]);
         if (isset($this->pipeline[$this->fields[$field]['type']])) {
@@ -562,27 +484,18 @@ class DaoConfig
         }
     }
 
-    public function setFieldEnum($field, $enum)
+    public function setFieldMap($field, callable $callback, $nameField = '', $nameFieldName = '')
     {
-        assertOrException(isset($this->fields[$field]), 'not set field:'.$field);
-        $this->fields[$field]['enum'] = $enum;
-        $this->fields[$field]['type'] = 'enum';
+        $nameField = empty($nameField) ? $field . 'Name' : $nameField;
+//        $nameFieldName = empty($nameFieldName) ? $this->fields[$field]['name'] . '名' : $nameFieldName;
+        $this->setRowFilter(function(&$row) use ($field, $nameField, $callback) {
+            $row[$nameField] = $callback($row[$field]);
+        });
     }
 
-    public function setFieldMap($field, $map)
+    public function setFieldEnum($field, array $enum)
     {
-        $nameField = $field . 'Name';
-        $nameFieldName = $this->fields[$field]['name'] . '名';
-//        $this->setField($nameField, 'varchar', 255, $nameFieldName);
-        $this->virtualField[$nameField] = array(
-            'type'=>'map',
-            'map'=>$map,
-        );
-    }
 
-    public function setFieldHtml($field)
-    {
-           $this->setFilter($field, 'html');
     }
 
     public function setFieldDefault($field, $value)
@@ -607,10 +520,16 @@ class DaoConfig
         $this->defaultQuery = $condition;
     }
 
-    // 设置自定义过滤器
-    public function setPipeline(DaoPipeline $Pipeline)
+    // 设置过滤器
+    public function setRowFilter(callable $callback)
     {
+        $this->filters[] = $callback;
+    }
 
+    // 设置返回值处理
+    public function setRowFormat(callable $callback)
+    {
+        $this->format[] = $callback;
     }
 
     // 获取字段过滤器，带参数则直接返回对象
@@ -638,11 +557,6 @@ class DaoConfig
         $this->readonlyFields = array_merge($this->readonlyFields, $fields);
     }
 
-    public function setFilter($field, $type, $params = '') // email、mobile、json、
-    {
-        $this->filters[$field][$type] = $params;
-    }
-
     public function canWork()
     {
         assertOrException(!empty($this->table), 'not set table');
@@ -657,8 +571,9 @@ class DaoConfig
     }
 
     // 解析字段参数
-    public function analyzeFieldArgs($field, $args)
+    public function extractFieldParams($args)
     {
+        $params = array();
         while (!empty($args)) {
             $arg = array_shift($args);
 
@@ -785,7 +700,7 @@ class DaoFilter
     }
 }
 
-abstract class DaoPipeline
+abstract class RowPipeline
 {
     abstract public function toShow($value);
     abstract public function toDb($value);
@@ -824,7 +739,7 @@ abstract class DaoPipeline
     }
 }
 
-class IntPipeline extends DaoPipeline
+class IntPipeline extends RowPipeline
 {
     public function toShow($value)
     {
@@ -838,7 +753,7 @@ class IntPipeline extends DaoPipeline
 }
 
 
-class StringPipeline extends DaoPipeline
+class StringPipeline extends RowPipeline
 {
     public function toShow($value)
     {
@@ -852,7 +767,7 @@ class StringPipeline extends DaoPipeline
     }
 }
 
-class TextPipeline extends DaoPipeline
+class TextPipeline extends RowPipeline
 {
     public function toShow($value)
     {
@@ -866,7 +781,7 @@ class TextPipeline extends DaoPipeline
 }
 
 
-class HtmlPipeline extends DaoPipeline
+class HtmlPipeline extends RowPipeline
 {
     public function toShow($value)
     {
@@ -880,7 +795,7 @@ class HtmlPipeline extends DaoPipeline
     }
 }
 
-class JsonPipeline extends DaoPipeline
+class JsonPipeline extends RowPipeline
 {
     public function toShow($value)
     {
@@ -893,7 +808,7 @@ class JsonPipeline extends DaoPipeline
     }
 }
 
-class TimestampPipeline extends DaoPipeline
+class TimestampPipeline extends RowPipeline
 {
     public function toDb($value)
     {

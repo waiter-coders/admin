@@ -1,7 +1,7 @@
 <?php
 //分页
-Menu::classify('paging', '分页列表','user')
-    ->item('Paging','简单分页','show')
+Menu::classify('record', '分页列表','user')
+    ->item('simple','简单分页','show')
     ->item('Search','分页搜索','show')
     ->item('FastEdit','快速编辑','show')
     ->item('CheckBox','列表多选','show')

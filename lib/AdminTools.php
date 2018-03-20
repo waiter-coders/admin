@@ -44,7 +44,7 @@ abstract class AdminTools
         $config['primaryKey'] = $this->dao->primaryKey();
 
         // 获取字段信息
-        $config['fields'] = $this->dao->getBaseFields(true);
+        $config['fields'] = $this->dao->getMainFields(true);
         $config['fieldKeys'] = array_keys($config['fields']);
 
         // 字段处理
