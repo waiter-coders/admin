@@ -11,6 +11,7 @@ class Paging extends \Controller\AdminBase
         parent::__construct();
         // 数据源配置
         $this->dao = $this->model('record');
+        var_dump($this->dao->getList());exit();
         $this->config = $this->generateConfig($this->dao);
     }
 

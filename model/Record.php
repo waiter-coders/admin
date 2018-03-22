@@ -9,27 +9,25 @@ class Record extends \Dao
         // 数据源配置
         $daoConfig->setTable('paging_simple');
         $daoConfig->setPrimaryKey('id');
-        $daoConfig->setField('type', 'tinyint', 3, '类型');
+        $daoConfig->setField('type', 'enum', 3, '类型', $this->typeMap());
         $daoConfig->setField('name', 'varchar', 255, '名称');
         $daoConfig->setField('info', 'varchar', 255, '简介');
         $daoConfig->setField('image', 'varchar', 255, '图片');
-        $daoConfig->setField('content', 'text', '内容');
+        $daoConfig->setField('content', 'html', '内容');
         $daoConfig->setField('url', 'varchar', 255, '连接');
         $daoConfig->setField('upload', 'varchar', 255, '上传文件');
         $daoConfig->setField('addTime', 'datetime', '添加时间');
         $daoConfig->setField('updateTime', 'timestamp', '更新时间');
-
-        // 字段合法性设置
-        $daoConfig->setFieldMap('type', array(
-            1=>array('name'=>'测试'),
-            2=>array('name'=>'测试2'),
-        ));
-        $daoConfig->setFieldHtml('content');
         $daoConfig->setFieldDefault('addTime', date('Y-m-d H:i:s'));
         $daoConfig->setFieldsReadonly('addTime', 'updateTime');
-        $daoConfig->setFieldsIsDetail('content');
-        $daoConfig->setDefaultQuery(array());
         parent::__construct($daoConfig);
     }
 
+    private function typeMap()
+    {
+        return array(
+            1=>array('name'=>'测试'),
+            2=>array('name'=>'测试2'),
+        );
+    }
 }

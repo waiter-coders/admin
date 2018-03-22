@@ -60,18 +60,20 @@ class Dao
     {
         $fields = array();
         foreach ($this->daoConfig->fields as $field=>$params) {
-            if (!isset($params['sub']) || empty($params['sub'])) {
+            if (!isset($params['join']) || empty($params['join'])) {
                 $fields[] = $field;
             }
         }
         return $fields;
     }
 
-    public function getSubFields($subName)
+    public function getJoinFields($joinTables)
     {
         $fields = array();
+        $joinTables = is_string($joinTables) ? explode(',', $joinTables) : $joinTables;
+        $joinTables = array_flip($joinTables);
         foreach ($this->daoConfig->fields as $field=>$params) {
-            if (isset($params['sub']) && $params['sub'] == $subName) {
+            if (isset($params['join']) && isset($joinTables[$params['join']])) {
                 $fields[] = $field;
             }
         }
@@ -124,9 +126,9 @@ class Dao
     }
 
 
-    public function detail($id, $subTables = '*')
+    public function detail($id, $joinTables = '*')
     {
-        $fields = (empty($subTables) || $subTables == '*') ? $this->getAllFields() : array_merge($this->getMainFields(), $this->getSubFields($subTables));
+        $fields = (empty($joinTables) || $joinTables == '*') ? $this->getAllFields() : array_merge($this->getMainFields(), $this->getJoinFields($joinTables));
         return $this->infoById($id, $fields);
     }
 
@@ -145,20 +147,19 @@ class Dao
             // 检查是否存在join table的配置
             assertOrException(isset($this->daoConfig->joinTables[$table]), 'no join table config:'.$table);
             $join = $this->daoConfig->joinTables[$table];
-            $tableName = $join['table'] . ' as ' . $table;
-            $on = sprintf('%s.%s = %s.%s', $this->daoConfig->table, $join['mainField'], $table, $join['joinField']);
-            $tableDao = $tableDao->leftJoin($tableName)->on($on);
+            $joinTable = ($table == $join['table']) ? $table : $join['table'] . ' as ' . $table;
+            $tableDao = $tableDao->leftJoin($joinTable)->on($join['on']);
         }
 
         // 查询条件处理
-        $where = $this->toTrueWhere($where);
         $where = array_merge($this->daoConfig->defaultQuery, $where);
         if (!empty($this->daoConfig->softDeleteField)) {
             $where[$this->daoConfig->softDeleteField] = 0;
         }
+        $where = $this->toTrueWhere($where);
 
         // 查询
-        $fields = implode(',', $this->toTrueFields($fields));
+        $fields = $this->buildFieldsString($fields);
         $defaultOrder = isset($this->daoConfig->defaultQuery['order']) ? $this->daoConfig->defaultQuery['order'] : $this->primaryKey() . ' desc';
         $order = empty($order) ? $defaultOrder : $order;
         return $tableDao->select($fields)->where($where)->orderBy($order)->limit($offset . ',' . $length)->fetchAll();
@@ -174,14 +175,15 @@ class Dao
     public function update($update, $where)
     {
 
-        $update = RowPipeline::iteration($update, $this->daoConfig, 'toDb');
+//        $update = RowPipeline::iteration($update, $this->daoConfig, 'toDb');
+        $where = $this->toTrueWhere($where);
         return $this->table()->where($where)->update($update);
     }
 
     // 根据主键id更新信息
     public function updateById($id, $update)
     {
-        $update = RowPipeline::iteration($update, $this->daoConfig, 'toDb');
+//        $update = RowPipeline::iteration($update, $this->daoConfig, 'toDb');
         $update = $this->groupByTables($update);
         foreach ($update as $table=>$data) {
             $idField = $this->daoConfig->primaryKey;
@@ -197,7 +199,6 @@ class Dao
     // 根据某一字段值更新信息
     public function updateField($id, $key, $value)
     {
-        assertOrException($this->dataIsSafe(array($key=>$value), $message), $message);
         return $this->updateById($id, array(
             $key=>$value,
         ));
@@ -207,7 +208,7 @@ class Dao
     public function insert($insert)
     {
         $insert = array_merge($this->getDefaultValues(), $insert);
-        assertOrException($this->dataIsSafe($insert, $message), $message);
+//        assertOrException($this->dataIsSafe($insert, $message), $message);
         $insert = RowPipeline::iteration($insert, $this->daoConfig, 'toDb');
         $insert = $this->groupByTables($insert);
         $mainInsert = $insert[$this->daoConfig->table];
@@ -273,18 +274,18 @@ class Dao
         }
         return $values;
     }
-
-    private function tableFields($table)
-    {
-        if (empty($this->tableFields)) {
-            $mainTable = $this->daoConfig->table;
-            foreach ($this->daoConfig->fields as $field=>$params) {
-                $tableName = isset($params['table']) ? $params['table'] : $mainTable;
-                $this->tableFields[$tableName][] = $field;
-            }
-        }
-        return isset($this->tableFields[$table]) ? $this->tableFields[$table] : array();
-    }
+//
+//    private function tableFields($table)
+//    {
+//        if (empty($this->tableFields)) {
+//            $mainTable = $this->daoConfig->table;
+//            foreach ($this->daoConfig->fields as $field=>$params) {
+//                $tableName = isset($params['table']) ? $params['table'] : $mainTable;
+//                $this->tableFields[$tableName][] = $field;
+//            }
+//        }
+//        return isset($this->tableFields[$table]) ? $this->tableFields[$table] : array();
+//    }
 
     private function selectTables(array $fields)
     {
@@ -299,38 +300,32 @@ class Dao
         return array_keys($tables);
     }
 
-    private function toTrueFields(array $fields)
+    private function buildFieldsString(array $fields)
     {
-        $trueFields = array();
+        $select = array();
         foreach ($fields as $field) {
-            $trueField = $this->trueField($field);
-            if ($trueField) {
-                $trueFields[] = $trueField . ' as ' . $field;
-            }
+            $select[] = $this->daoConfig->fields[$field]['field'] . ' as ' . $field;
         }
-        return $trueFields;
+        return implode(',', $select);
     }
 
-    private function trueField($field)
+    private function covertToTrueField($value)
     {
-        $params = $this->daoConfig->fields[$field];
-        if (isset($params['isVirtual']) &&  $params['isVirtual'] == true) {
-            return null;
+        if (is_int($value)) {
+            return $value;
         }
-        $table = isset($params['table']) ? $params['table'] : $this->daoConfig->table;
-        return isset($params['trueField']) ? $params['trueField'] : $table . '.' . $field;
+        $value .= ' ';
+        foreach ($this->daoConfig->fields as $field=>$params) {
+            $value = str_replace($field . ' ', $params['field'], $value);
+        }
+        return trim($value);
     }
 
-    private function toTrueWhere($where)
+    private function toTrueWhere($condition)
     {
-        foreach ($where as $field=> $params) {
-            list($trueField, $tip) = explode(' ', $field . ' ');
-            $trueField = trim($trueField);$tip = trim($tip);
-            $trueField = trim($trueField);$tip = trim($tip);
-            $trueField = $this->trueField($trueField);
-            $trueField = empty($tip) ? $trueField : $trueField . ' ' . $tip;
-            unset($where[$field]);
-            $where[$trueField] = $params;
+        $where = array();
+        foreach ($condition as $field=> $params) {
+            $where[$this->covertToTrueField($field)] = $this->covertToTrueField($params);
         }
         return $where;
     }
@@ -463,8 +458,9 @@ class DaoConfig
         $this->primaryKey = $primaryKey;
         $this->fields[$primaryKey] = array(
             'name'=>$name,
-            'group'=>'base',
+            'join'=>'base',
             'type'=>$type,
+            'field'=>$primaryKey,
             'unsigned'=>$unsigned,
             'primaryKey'=>true,
         );
@@ -474,28 +470,13 @@ class DaoConfig
     {
         $args = func_get_args();
         $field = array_shift($args);
+        list($field, $trueField) = $this->extractAlias($field);
         assertOrException(!isset($this->fields[$field]), 'field all ready set:'.$field);
         $this->fields[$field] = $this->extractFieldParams($args);
-        $this->safeCheck($field);
-        $this->appendDefaultFilters($field, $this->fields[$field]);
-        if (isset($this->pipeline[$this->fields[$field]['type']])) {
-            $pipeline = $this->pipeline[$this->fields[$field]['type']];
-            $this->fields[$field]['pipeline'] = $pipeline;
+        $this->fields[$field]['field'] = $trueField;
+        if (($pos = strpos($trueField, '.')) > 0) {
+            $this->fields[$field]['table'] = substr($trueField, 0, $pos);
         }
-    }
-
-    public function setFieldMap($field, callable $callback, $nameField = '', $nameFieldName = '')
-    {
-        $nameField = empty($nameField) ? $field . 'Name' : $nameField;
-//        $nameFieldName = empty($nameFieldName) ? $this->fields[$field]['name'] . '名' : $nameFieldName;
-        $this->setRowFilter(function(&$row) use ($field, $nameField, $callback) {
-            $row[$nameField] = $callback($row[$field]);
-        });
-    }
-
-    public function setFieldEnum($field, array $enum)
-    {
-
     }
 
     public function setFieldDefault($field, $value)
@@ -507,54 +488,54 @@ class DaoConfig
     // 设置join表
     public function setJoinTable($joinTable, $mainField, $joinField = null)
     {
-        list($table, $tableLabel) = explode(' ', $joinTable . ' ', 2);
-        $table = trim($table);$tableLabel = trim($tableLabel);
-        $tableLabel = empty($tableLabel) ? $table : $tableLabel;
+        list($table, $trueTable) = $this->extractAlias($joinTable);
         $joinField = empty($joinField) ? $mainField : $joinField;
-        $this->joinTables[$tableLabel] = array('table'=>$table, 'mainField'=>$mainField, 'joinField'=>$joinField);
+        $on = sprintf('%s.%s = %s.%s', $this->table, $mainField, $table, $joinField);
+        $this->joinTables[$table] = array('table'=>$trueTable, 'on'=>$on);
     }
 
-    // 设置默认查询条件
-    public function setDefaultQuery(array $condition)
-    {
-        $this->defaultQuery = $condition;
-    }
-
-    // 设置过滤器
-    public function setRowFilter(callable $callback)
-    {
-        $this->filters[] = $callback;
-    }
-
-    // 设置返回值处理
-    public function setRowFormat(callable $callback)
-    {
-        $this->format[] = $callback;
-    }
-
-    // 获取字段过滤器，带参数则直接返回对象
-    public function getPipeline($field, $PipelineName = '')
-    {
-
-    }
+//    // 设置默认查询条件
+//    public function setDefaultQuery(array $condition)
+//    {
+//        $this->defaultQuery = $condition;
+//    }
+//
+//    // 设置过滤器
+//    public function setRowFilter(callable $callback)
+//    {
+//        $this->filters[] = $callback;
+//    }
+//
+//    // 设置返回值处理
+//    public function setRowFormat(callable $callback)
+//    {
+//        $this->format[] = $callback;
+//    }
+//
+//    // 获取字段过滤器，带参数则直接返回对象
+//    public function getPipeline($field, $PipelineName = '')
+//    {
+//
+//    }
 
     // 设置字段为基本信息不可见
-    public function setFieldsIsDetail($fields)
+    public function setFieldsClassify($fields, $classify = 'detail')
     {
-        $fields = func_get_args();
-        $fields = implode(',', $fields);
-        $fields = explode(',', $fields);
-        $this->detailFields = array_merge($this->detailFields, $fields);
+        $fields = $this->formatFields(func_get_args());
+        foreach ($fields as $field) {
+            assertOrException(isset($this->fields[$field]), 'classify field not set:' . $field);
+            $this->fields[$field]['classify'] = $classify;
+        }
     }
 
     // 设置信息不可以被修改
     public function setFieldsReadonly($fields)
     {
-        $fields = func_get_args();
-        $fields = implode(',', $fields);
-        $fields = explode(',', $fields);
-        $fields = array_flip($fields);
-        $this->readonlyFields = array_merge($this->readonlyFields, $fields);
+        $fields = $this->formatFields(func_get_args());
+        foreach ($fields as $field) {
+            assertOrException(isset($this->fields[$field]), 'readonly field not set:' . $field);
+            $this->fields[$field]['readonly'] = true;
+        }
     }
 
     public function canWork()
@@ -581,99 +562,105 @@ class DaoConfig
             if (is_string($arg)) {
                 // 基础字段类型识别
                 if (isset(self::$baseFieldType[$arg])) {
-                    $this->fields[$field]['type'] = $arg;
+                    $params['type'] = $arg;
                     continue;
                 }
                 // 扩展字段类型识别
                 if (isset(self::$extendFieldType[$arg])) {
-                    $this->fields[$field]['type'] = self::$extendFieldType[$arg]['type'];
-                    $this->filters[$field][self::$extendFieldType[$arg]['filter']] = self::$extendFieldType[$arg]['params'];
+                    $params['type'] = self::$extendFieldType[$arg]['type'];
+                    $params['filter'][] = self::$extendFieldType[$arg]['params'];
                     continue;
                 }
                 // unsigned识别
                 if ($arg == 'unsigned') {
-                    $this->fields[$field]['unsigned'] = true;
+                    $params['unsigned'] = true;
                     continue;
                 }
                 // 含有中文的被认为是字段名
-                if (preg_match("/[\x7f-\xff]/", $arg)) { // 暂时只是utf8
-                    $this->fields[$field]['name'] = $arg;
-                    continue;
-                }
-                // join字段
-                if ($pos = strpos($arg, '.')) {
-                    $this->fields[$field]['trueField'] = $arg;
-                    $table = substr($arg, 0, $pos);
-                    $this->fields[$field]['table'] = $table;
+                if (preg_match("/[\x7f-\xff]/", $arg)) { // 暂时只是utf8??
+                    $params['name'] = $arg;
                     continue;
                 }
 
                 // 前置下划线被认为是过滤器
                 if ($arg[0] == '_') {
-                    $this->filters[$field]['regex'] = ltrim($arg, '_');
+                    $params['filter'][] = array('type'=>'regex', 'pattern'=>ltrim($arg, '_'));
                     continue;
                 }
             }
             // 数字认为是长度
             if (is_int($arg)) {
-                $this->fields[$field]['length'] = $arg;
+                $params['length'] = $arg;
                 continue;
             }
             // 数据被认为是map
             if (is_array($arg)) {
-                $this->fields[$field]['range'] = $arg;
-            }
-            // 可调用函数
-            if (is_callable($arg)) {
-                $params['type'] = '';
-                $params['pipeline'] = 'DisplayPipeline';
-                $params['call'] = $arg;
-                $params['isVirtual'] = true;
+                $params['type'] = 'enum';
+                $params['enum'] = $arg;
                 continue;
             }
 
             throw new Exception('no look:' . $arg);
         }
+        return $params;
     }
 
-    private function safeCheck($field)
-    {
-        $params = $this->fields[$field];
-        if ($params['type'] == 'varchar') {
-            assertOrException(isset($params['length']), 'varchar mast set length:'.$field);
-        }
-    }
-
-    private function appendDefaultFilters($field, $params)
-    {
-        if (!isset($params['default'])) {
-            $this->filters[$field][] = $this->defaultFilters['empty'];
-        }
-        if (isset($params['length']) && $params['type'] == 'varchar') {
-            $filter = $this->defaultFilters['length'];
-            $filter['max'] = $params['length'];
-            $filter = $this->replaceTemplateArgs($filter);
-            $this->filters[$field][] = $filter;
-        }
-        if ($params['type'] == 'int') {
-            $this->filters[$field][] = $this->defaultFilters['number'];
-        }
-//        if ($params['type'] == 'varchar' && !isset($this->filters[$field]['string'])) {
-//            $filter = ($params['length'] > 255) ? 'text' : 'string';
-//            $this->filters[$field]['string'] = $filter;
+//    private function safeCheck($field)
+//    {
+//        $params = $this->fields[$field];
+//        if ($params['type'] == 'varchar') {
+//            assertOrException(isset($params['length']), 'varchar mast set length:'.$field);
 //        }
+//    }
+
+//    private function appendDefaultFilters($field, $params)
+//    {
+//        if (!isset($params['default'])) {
+//            $this->filters[$field][] = $this->defaultFilters['empty'];
+//        }
+//        if (isset($params['length']) && $params['type'] == 'varchar') {
+//            $filter = $this->defaultFilters['length'];
+//            $filter['max'] = $params['length'];
+//            $filter = $this->replaceTemplateArgs($filter);
+//            $this->filters[$field][] = $filter;
+//        }
+//        if ($params['type'] == 'int') {
+//            $this->filters[$field][] = $this->defaultFilters['number'];
+//        }
+////        if ($params['type'] == 'varchar' && !isset($this->filters[$field]['string'])) {
+////            $filter = ($params['length'] > 255) ? 'text' : 'string';
+////            $this->filters[$field]['string'] = $filter;
+////        }
+//    }
+
+//    private function replaceTemplateArgs($filter)
+//    {
+//        $response = array();
+//        foreach ($filter as $key=>$value) {
+//            $response[$key] = $value;
+//            foreach ($filter as $replaceKey=>$replaceValue) {
+//             $response[$key] = str_replace('@' . $replaceKey, $replaceValue, $response[$key]);
+//            }
+//        }
+//        return $response;
+//    }
+
+    private function extractAlias($name)
+    {
+        $name = trim(preg_replace('/[ ]{2,}/', ' ', str_replace(' as ', ' ', $name))); //去掉多余的空格和as
+        if (($pos = strpos($name, ' ')) > 0) {
+            list($table, $alias) = explode(' ', $name);
+            return array($alias, $table);
+        } else {
+            return array($name, $name);
+        }
     }
 
-    private function replaceTemplateArgs($filter)
+    private function formatFields($fields)
     {
-        $response = array();
-        foreach ($filter as $key=>$value) {
-            $response[$key] = $value;
-            foreach ($filter as $replaceKey=>$replaceValue) {
-             $response[$key] = str_replace('@' . $replaceKey, $replaceValue, $response[$key]);
-            }
-        }
-        return $response;
+        $fields = implode(',', $fields);
+        $fields = explode(',', $fields);
+        return $fields;
     }
 }
 
