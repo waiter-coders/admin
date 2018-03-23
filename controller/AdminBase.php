@@ -114,6 +114,6 @@ class AdminBase extends Base
 
     protected function paging($dao)
     {
-        return new \AdminPaging($dao);
+        return new \AdminList($dao);
     }
 }

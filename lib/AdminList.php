@@ -1,5 +1,5 @@
 <?php
-class AdminPaging extends AdminTools
+class AdminList extends AdminTools
 {
     /* 搜索区块 */
     private $search = array(
@@ -37,24 +37,20 @@ class AdminPaging extends AdminTools
     {
         parent::__construct($dao);
         $this->list['idField'] = $dao->primaryKey();
-        $this->list['fields'] = $dao->getAllFields(true);
+        $this->list['fields'] = $dao->getAllFields();
     }
 
 
     public function addPublicAction($action)
     {
-        if (!isset($this->publicActions[$action])) {
-            $this->publicActions[$action] = new PublicAction($action);
-        }
-        return $this->publicActions[$action];
+        assertOrException(!isset($this->publicActions[$action]), 'public action is set:' . $action);
+        return $this->publicActions[$action] = new PublicAction($action);
     }
 
     public function addItemAction($action)
     {
-        if (!isset($this->itemActions[$action])) {
-            $this->itemActions[$action] = new ItemAction($action);
-        }
-        return $this->itemActions[$action];
+        assertOrException(!isset($this->itemActions[$action]), 'item action is set:' . $action);
+        return $this->itemActions[$action] = new ItemAction($action);
     }
 
     public function addSelectAction($action)
@@ -118,14 +114,14 @@ class AdminPaging extends AdminTools
         $config['actions'] = $this->extractActionsParams($this->publicActions);
         $config['list'] = $this->list;
 
-        list($list, $totalNum) = array_values($this->dao->paging(
-            $this->paging['current'], $this->paging['pageSize'], $this->formatSearch($this->search['fields'])));
-        $list = $this->appendListActions($list, $this->itemActions);
-        $config['list']['data'] = $list;
+//        list($list, $totalNum) = array_values($this->dao->paging(
+//            $this->paging['current'], $this->paging['pageSize'], $this->formatSearch($this->search['fields'])));
+//        $list = $this->appendListActions($list, $this->itemActions);
+//        $config['list']['data'] = $list;
         $config['list']['hasActions'] = empty($this->itemActions) ? false : true ;
         $config['list']['fastEditFields'] = $this->list['fastEditFields'];
         $config['list']['fastEditUrl'] = AdminTools::controllerUrl().'/fieldUpdate';
-        $config['paging'] = $this->expandPagingInfo($this->paging, $totalNum);
+//        $config['paging'] = $this->expandPagingInfo($this->paging, $totalNum);
         $config['selectActions'] = $this->extractActionsParams($this->selectActions);
         if (!empty($this->selectActions)) {
             $config['list']['isCheckBox'] = true;

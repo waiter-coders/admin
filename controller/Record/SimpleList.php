@@ -1,7 +1,7 @@
 <?php
 namespace Controller\Record;
 
-class Paging extends \Controller\AdminBase
+class SimpleList extends \Controller\AdminBase
 {
     private $dao;
     private $config;
@@ -11,7 +11,6 @@ class Paging extends \Controller\AdminBase
         parent::__construct();
         // 数据源配置
         $this->dao = $this->model('record');
-        var_dump($this->dao->getList());exit();
         $this->config = $this->generateConfig($this->dao);
     }
 
@@ -61,18 +60,18 @@ class Paging extends \Controller\AdminBase
 
     private function generateConfig($dao)
     {
-        $paging = new \AdminPaging($dao);
-        $paging->addPublicAction('add');
-        $paging->addItemAction('edit');
-        $paging->addItemAction('delete');
-        $paging->addItemAction('showTitle')->setName('标题')->setAjax()->setDisabled(function ($record) {
+        $config = new \AdminList($dao);
+        $config->addPublicAction('add');
+        $config->addItemAction('edit');
+        $config->addItemAction('delete');
+        $config->addItemAction('showTitle')->setName('标题')->setAjax()->setDisabled(function ($record) {
             return false;
         });
-        $paging->addItemAction('test')->setUrl('delete?@data.primaryKey=@data.id');
-        $paging->addItemAction('test')->setUrl('../SimpleEditor/show?@data.primaryKey=@data.id');
-        $paging->addItemAction('test')->setUrl('/Tree/Simple/show?@data.primaryKey=@data.id');
-        $paging->addItemAction('test')->setUrl('http://git.oschina.net/waiterall/waiterphp');
-        return $paging->getParams();
+        $config->addItemAction('test')->setUrl('delete?@data.primaryKey=@data.id');
+        $config->addItemAction('test_1')->setUrl('../SimpleEditor/show?@data.primaryKey=@data.id');
+        $config->addItemAction('test_2')->setUrl('/Tree/Simple/show?@data.primaryKey=@data.id');
+        $config->addItemAction('test_3')->setUrl('http://git.oschina.net/waiterall/waiterphp');
+        return $config->getParams();
     }
 
 
