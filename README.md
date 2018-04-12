@@ -30,6 +30,8 @@ builder admin.list record.simpleList --table user_table --model record
 ### 主要概念
 
 #### 域
+后台通过域的概念去管理所有控制器。
 
 #### 配置工具
+每一个组件，都提供一个工具类，帮我们更友好的生成相关数据。
 
