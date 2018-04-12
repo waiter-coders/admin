@@ -27,3 +27,9 @@ builder admin.list record.simpleList --table user_table --model record
 |form|表单页||
 |chart|统计图表||
 
+### 主要概念
+
+#### 域
+
+#### 配置工具
+
