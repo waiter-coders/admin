@@ -7,16 +7,17 @@
 
 通过composer进行安装。
 ```$xslt
-composer create-project waiterphp/admin
-
+composer create-project waiterphp/app
 ```
-
-修改数据库的配置文件。
-
+通过builder工具安装admin
+```
+builder admin.project
+```
+请先修改数据库的配置信息。
 
 
 ### 项目构建
-以构建列表页为例，可以采用builder的方式：
+以构建列表页为例，可通过builder构建：
 
 ```
 builder admin.list record.simpleList --table user_table --dao record
