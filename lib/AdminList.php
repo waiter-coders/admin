@@ -107,34 +107,15 @@ class AdminList extends AdminTools
         $this->addPublicAction('fastAdd');
     }
 
-    public function getParams()
+    public function getConfig()
     {
         $config =  array();
         $config['search'] = $this->search;
-        $config['actions'] = $this->extractActionsParams($this->publicActions);
-        $config['list'] = $this->list;
-
-//        list($list, $totalNum) = array_values($this->dao->paging(
-//            $this->paging['current'], $this->paging['pageSize'], $this->formatSearch($this->search['fields'])));
-//        $list = $this->appendListActions($list, $this->itemActions);
-//        $config['list']['data'] = $list;
-        $config['list']['hasActions'] = empty($this->itemActions) ? false : true ;
-        $config['list']['fastEditFields'] = $this->list['fastEditFields'];
-        $config['list']['fastEditUrl'] = AdminTools::controllerUrl().'/fieldUpdate';
-//        $config['paging'] = $this->expandPagingInfo($this->paging, $totalNum);
+        $config['fields'] = $this->dao->getMainFields();
+        $config['publicActions'] = $this->extractActionsParams($this->publicActions);
+        $config['itemActions'] = $this->extractActionsParams($this->itemActions);
         $config['selectActions'] = $this->extractActionsParams($this->selectActions);
-        if (!empty($this->selectActions)) {
-            $config['list']['isCheckBox'] = true;
-        }
         return $config;
-    }
-
-    private function appendListActions($list, $actions)
-    {
-        foreach ($list as $key=>$record) {
-            $list[$key]['actions'] = $this->extractActionsParams($actions, $record);
-        }
-        return $list;
     }
 
     private function extractActionsParams($actions, $record = '')

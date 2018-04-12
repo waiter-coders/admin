@@ -1,7 +1,7 @@
 <?php
 namespace Controller\Statistics;
 
-class Chart extends \Controller\AdminBase
+class Simple extends \Controller\AdminBase
 {
     public function getConfig()
     {

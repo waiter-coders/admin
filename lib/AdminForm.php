@@ -106,7 +106,7 @@ class AdminForm extends AdminTools
         $this->inputUpperLimit = $upperLimit;
     }
 
-    public function getParams()
+    public function getConfig()
     {
         $data = array();
         if (!empty($this->dataId)) {

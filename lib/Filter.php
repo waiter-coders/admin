@@ -29,9 +29,10 @@ class Filter
         return empty($result) ? $default : (int)$result;
     }
 
-    public function getArray($key, $default = null)
+    public function getArray($key, $default = null, $split = '_')
     {
-        return isset($this->data[$key]) ? $this->data[$key] : $default;
+        $result = isset($this->data[$key]) ? $this->data[$key] : $default;
+        return is_string($result) ? explode($split, $result) : $result;
     }
 
     public function getString($key, $default = null)

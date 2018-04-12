@@ -19,7 +19,7 @@ abstract class AdminTools
         $this->dao = $dao;
     }
 
-    public function getParams()
+    public function getConfig()
     {
         $config = array();
         $config['dao']= $this->getDaoConfig();

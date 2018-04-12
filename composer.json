@@ -3,7 +3,8 @@
   "description": "this is app sample app",
   "type": "project",
   "require": {
-    "waiterphp/drives-view-smarty": "^1.0"
+    "waiterphp/drives-view-smarty": "^1.0",
+    "phpunit/phpunit":"^4.0.0"
   },
   "license": "MIT",
   "authors": [
