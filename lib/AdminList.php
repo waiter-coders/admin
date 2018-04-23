@@ -1,6 +1,8 @@
 <?php
 class AdminList extends AdminTools
 {
+    protected $type = 'list';
+
     /* 搜索区块 */
     private $search = array(
         'url'=>'', // 搜索操作的url
@@ -61,14 +63,6 @@ class AdminList extends AdminTools
         return $this->selectActions[$action];
     }
 
-    private function checkAction($action)
-    {
-        if (!is_array($action) || !isset($action['type']) || !isset($action['name'])
-            || !isset($action['click']) || !isset($action['url'])) {
-            return false;
-        }
-        return true;
-    }
 
     public function short($field, $length = 10)
     {
@@ -110,6 +104,8 @@ class AdminList extends AdminTools
     public function getConfig()
     {
         $config =  array();
+        $config['type'] = $this->type;
+        $config['name'] = $this->makeName();
         $config['search'] = $this->search;
         $config['fields'] = $this->dao->getMainFields();
         $config['publicActions'] = $this->extractActionsParams($this->publicActions);
@@ -168,39 +164,6 @@ class AdminList extends AdminTools
             $where[$field] = $value;
         }
         return $where;
-    }
-
-    private function expandPagingInfo($pagingInfo, $total, $sideNum = 3)
-    {
-        $baseUrl = Http::url();
-        $preNum = max($pagingInfo['current'] - 1, 1);
-        $nextNum = min($pagingInfo['current'] + 1, $total);
-        $pagingInfo['total'] = $total;
-        $pagingInfo['firstUrl'] = Http::refreshUrlQuery($baseUrl, array('page'=>1));
-        $pagingInfo['lastUrl'] = Http::refreshUrlQuery($baseUrl, array('page'=>$total));
-        $pagingInfo['preUrl'] = Http::refreshUrlQuery($baseUrl, array('page'=>$preNum));
-        $pagingInfo['nextUrl'] = Http::refreshUrlQuery($baseUrl, array('page'=>$nextNum));
-        $pagingInfo['pageRange'] = $this->getPageRange($total, $sideNum, $pagingInfo['current']);
-        return $pagingInfo;
-    }
-
-    private function getPageRange($total, $sideNum, $current = 1)
-    {
-        $left = 1;
-        $right = $total;
-        if (2 * $sideNum + 1 < $total) { // 要显示的数字标签超过总标签时，隐去部分标签
-            $leftOffset = $total - $current >= $sideNum ? $sideNum :  2 * $sideNum - ($total - $current);
-            $rightOffset = $current - 1 >= $sideNum ? $sideNum : 2 *  $sideNum - ($current - 1);
-            $left = $current - $leftOffset > 1 ? $current - $leftOffset : 1;
-            $right = $current + $rightOffset > $total ? $total : $current + $rightOffset;
-        }
-        $pageNumRange = range($left, $right);
-
-        $pageRange = array();
-        foreach ($pageNumRange as $pageNum) {
-            $pageRange[$pageNum] = Http::refreshUrlQuery(Http::url(), array('page'=>$pageNum));
-        }
-        return $pageRange;
     }
 }
 

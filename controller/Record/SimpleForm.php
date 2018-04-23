@@ -1,7 +1,7 @@
 <?php
 namespace Controller\Record;
 
-class SimpleForm extends \Controller\AdminBase
+class SimpleForm extends \Controller\ToolsBase
 {
 
 }

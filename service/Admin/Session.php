@@ -1,5 +1,5 @@
 <?php
-namespace Service\User;
+namespace Service\Admin;
 
 class Session
 {

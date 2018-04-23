@@ -30,37 +30,25 @@ class SimpleList extends \Controller\AdminBase
         $this->adminList->addItemAction('test_3')->setUrl('http://git.oschina.net/waiterall/waiterphp');
     }
 
-    public function show()
-    {
-        $this->render('record/simpleList.html', $this->adminList->getConfig());
-    }
-
-
     public function getConfig()
     {
-        return array( $this->adminList->getConfig());
+        return array($this->adminList->getConfig());
     }
+
 
     public function getList()
     {
-
+        return $this->adminList->getList();
     }
 
     public function totalNum()
     {
-
+        return $this->adminList->getList();
     }
 
-    public function action()
-    {
-        $action = $this->post->getString('action');
-        assertOrException(!empty($action) && method_exists($this, $action), 'action error');
-        $ids = $this->post->getArray('ids', array());
-        $data = $this->post->getArray('data', array());
-        return call_user_func(array($this, $action), $ids, $data);
-    }
 
-    public function fieldUpdate()
+
+    private function fieldUpdate($ids, $data = array())
     {
         $primaryKey = $this->dao->primaryKey();
         $id = $this->post->getInt($primaryKey);

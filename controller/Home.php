@@ -1,7 +1,7 @@
 <?php
 namespace Controller;
 
-class Home extends \Controller\AdminBase
+class Home extends \Controller\ToolsBase
 {
     public function show()
     {
