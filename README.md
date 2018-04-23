@@ -1,26 +1,30 @@
-### waiterphp后台项目方案
-本项目用于快速开发后台程序。它提供了一些后台常用功能，如登录、权限、列表、表单、统计等。项目本身并不影响waiterphp/app的基本结构。所以，您可以很方便的进行二次开发。
+### 概述
+该项目可快速开发后台，并保持了良好的二次开发性能。
 
-项目的前端部分采用vue开发。有前端二次开发需求的可访问项目[waiterphp/admin-vue]()
+基础页示例：
+
+
 
 ### 搭建环境
 
 通过composer进行安装。
 ```$xslt
-composer create-project waiterphp/admin
-
+composer create-project waiterphp/app
 ```
-
-修改数据库的配置文件。
-
+通过builder工具安装admin
+```
+builder admin.project
+```
+请先修改数据库的配置信息。
 
 
 ### 项目构建
-以构建列表页为例，可以采用builder的方式：
+以构建列表页为例，可通过builder构建：
 
 ```
-builder admin.list record.simpleList --table user_table --dao record
+builder admin.list record.simpleList --table user_table --model record
 ```
+项目会以table名生成model，名称会被格式化为驼峰命名法。当你想自定义model的名称时，请使用model参数
 
 可使用的构建组件有：
 
@@ -29,4 +33,12 @@ builder admin.list record.simpleList --table user_table --dao record
 |list|分页列表页||
 |form|表单页||
 |chart|统计图表||
+
+### 主要概念
+
+#### 域
+后台通过域的概念去管理所有控制器。
+
+#### 配置工具
+每一个组件，都提供一个工具类，帮我们更友好的生成相关数据。
 
