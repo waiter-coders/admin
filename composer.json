@@ -3,7 +3,7 @@
   "description": "this is app sample app",
   "type": "project",
   "require": {
-    "waiterphp/drives-view-smarty": "^1.0"
+    "waiterphp/core": "dev-master"
   },
   "license": "MIT",
   "authors": [

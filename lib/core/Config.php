@@ -14,6 +14,10 @@ class Config
         return isset(self::$configs[$name]) ? self::$configs[$name] : null;
     }
 
+    public static function register($config, $checkKeys = array())
+    {
+
+    }
 
     private $paths = array();
     private $config = array();
