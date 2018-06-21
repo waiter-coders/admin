@@ -1,16 +1,20 @@
 {
   "name": "waiterphp/admin",
-  "description": "this is app sample app",
-  "type": "project",
+  "description": "waiterphp后台类库",
+  "type": "library",
   "require": {
-    "waiterphp/drives-view-smarty": "^1.0",
-    "phpunit/phpunit":"^4.0.0"
-  },
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Tian Zheng",
-      "email": "949855040@qq.com"
+    "waiterphp/core": "^1.0.0"
+  },  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Waiterphp\\Admin\\Api\\": "src/api/",
+      "Waiterphp\\Admin\\Config\\": "src/config/",
+      "Waiterphp\\Admin\\Builder\\": "src/builder/"
     }
-  ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Waiterphp\\Admin\\Tests\\": "tests/"
+    }
+  }
 }

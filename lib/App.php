@@ -94,16 +94,16 @@ class AppCore
         if ($this->isInit == false) {
             Event::trigger('app.init.start');
             // 初始化应用类
-            Engine::addPath('Controller', $this->sets['path.controller']);
-            Engine::addPath('Event', $this->sets['path.events']);
-            Engine::addPath('Model', $this->sets['path.model']);
-            Engine::addPath('Service', $this->sets['path.service']);
-            Engine::addPath('Drives', $this->sets['path.drives']);
+            Loader::addLayer('Controller', $this->sets['path.controller']);
+            Loader::addLayer('Event', $this->sets['path.events']);
+            Loader::addLayer('Model', $this->sets['path.model']);
+            Loader::addLayer('Service', $this->sets['path.service']);
+            Loader::addLayer('Drives', $this->sets['path.drives']);
 
             // 初始化自定义加载类
             if (!empty($this->sets['path.loader'])) {
                 foreach ($this->sets['path.loader'] as $domain=>$path) {
-                    Engine::addPath(ucfirst($domain), $path);
+                    Loader::addLayer(ucfirst($domain), $path);
                 }
             }
 
