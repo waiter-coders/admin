@@ -18,7 +18,7 @@ trait AdminApi
     {
         $response = array();
         foreach ($this->adminConfigs as $pageConfig) {
-            $response[] = $pageConfig->toArray();
+            $response[] = $pageConfig->getConfig();
         }
         return $response;
     }

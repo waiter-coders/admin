@@ -11,33 +11,12 @@ namespace Waiterphp\Admin\Api;
 
 trait AdminList
 {
+    abstract protected function requestConfig();
+
     protected function newAdminListConfig($dao)
     {
         return new \Waiterphp\Admin\Config\AdminList($dao);
     }
 
-    public function getAdminListData()
-    {
 
-    }
-
-    public function getAdminListTotalNum()
-    {
-
-    }
-
-    public function deleteAdminListRecords()
-    {
-
-    }
-
-    public function updateAdminListRecords()
-    {
-
-    }
-
-    public function downloadAdminListRecords()
-    {
-
-    }
 }

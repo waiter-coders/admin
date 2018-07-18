@@ -11,5 +11,21 @@ namespace Waiterphp\Admin\Api;
 
 trait AdminForm
 {
+    abstract protected function requestConfig();
 
+    protected function newAdminFormConfig($dao)
+    {
+        return new \Waiterphp\Admin\Config\AdminForm($dao);
+    }
+
+    public function submit()
+    {
+        $config = $this->requestConfig();
+
+    }
+
+    public function formUpload()
+    {
+
+    }
 }

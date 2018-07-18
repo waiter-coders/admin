@@ -11,13 +11,15 @@ namespace Waiterphp\Admin\Config;
 
 class AdminBase
 {
-    public function toArray()
-    {
+    protected $dao;
 
+    public function __construct($dao)
+    {
+        $this->dao = $dao;
     }
 
-    public function bindDao($dao)
+    public function getDao()
     {
-
+        return $this->dao;
     }
 }
