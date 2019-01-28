@@ -7,8 +7,8 @@ class AdminTree extends AdminBase
 {
     private $type = 'admin-tree';
 
-    private $nodeActionsOrder = array();
-    private $nodeActionsMap = array();
+    private $nodeActionsOrder = [];
+    private $nodeActionsMap = [];
 
     public function __construct($dao)
     {

@@ -14,22 +14,22 @@ class AdminList extends AdminBase
     private $type = 'admin-list';
 
     /* 表格字段和字段属性 */
-    private $fieldsOrder = array();
-    private $fieldsMap = array();
+    private $fieldsOrder = [];
+    private $fieldsMap = [];
 
     /* 搜索区块 */
     private $search = array(
-        'fieldsOrder'=>array(),
-        'fieldsMap'=>array()
+        'fieldsOrder'=>[],
+        'fieldsMap'=>[]
     );
 
     /* 表格按钮组 */
-    private $tableActionsOrder = array();
-    private $tableActionsMap = array();
+    private $tableActionsOrder = [];
+    private $tableActionsMap = [];
 
     /* 行按钮组 */
-    private $rowActionsOrder = array();
-    private $rowActionsMap = array();
+    private $rowActionsOrder = [];
+    private $rowActionsMap = [];
 
     /* 分页器 */
     private $paging = array(
@@ -102,7 +102,7 @@ class AdminList extends AdminBase
         $showFields = empty($this->fieldsOrder) ? array_keys($daoFields) : $this->fieldsOrder;
         foreach ($showFields as $field) {
             assertOrException(isset($daoFields[$field]), 'show field not exist:' . $field);
-            $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
+            $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : [];
             $config['fields'][] = array_merge(array('field'=>$field), $daoFields[$field], $setFieldParam);
         }
         // 处理搜索

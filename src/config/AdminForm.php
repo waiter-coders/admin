@@ -7,9 +7,9 @@ class AdminForm extends AdminBase
 {
     private $type = 'admin-form';
 
-    private $fieldsOrder = array();
-    private $fieldsMap = array();
-    private $groups = array();
+    private $fieldsOrder = [];
+    private $fieldsMap = [];
+    private $groups = [];
     private $dataId = 0;
     private $url = '';
 
@@ -54,8 +54,8 @@ class AdminForm extends AdminBase
         $showFields = empty($this->fieldsOrder) ? array_keys($daoFields) : $this->fieldsOrder;
         foreach ($showFields as $field) {
             assertOrException(isset($daoFields[$field]), 'show field not exist:' . $field);
-            $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
-            $config['fields'][] = array_merge(array('field'=>$field), $daoFields[$field], $setFieldParam);
+            $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : [];
+            $config['fields'][] = array_merge(['field'=>$field], $daoFields[$field], $setFieldParam);
         }
         // 处理分组
         $config['groups'] = $this->groups;
