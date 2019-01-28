@@ -7,12 +7,10 @@
 
 ### 搭建环境
 
-通过composer进行安装。
+通过composer进行安装,并通过builder工具安装admin
 ```$xslt
-composer create-project waiterphp/app
-```
-通过builder工具安装admin
-```
+composer create-project waiterphp/app admin
+cd admin
 builder admin.project
 ```
 请先修改数据库的配置信息。
