@@ -11,29 +11,29 @@ namespace Waiterphp\Admin\Config;
 
 class AdminList extends AdminBase
 {
-    private $type = 'admin-list';
+    protected $type = 'adminList';
 
     /* 表格字段和字段属性 */
-    private $fieldsOrder = [];
-    private $fieldsMap = [];
+    private $fieldsOrder = array();
+    private $fieldsMap = array();
 
     /* 搜索区块 */
     private $search = array(
-        'fieldsOrder'=>[],
-        'fieldsMap'=>[]
+        'fieldsOrder'=>array(),
+        'fieldsMap'=>array()
     );
 
     /* 表格按钮组 */
-    private $tableActionsOrder = [];
-    private $tableActionsMap = [];
+    private $tableActionsOrder = array();
+    private $tableActionsMap = array();
 
     /* 行按钮组 */
-    private $rowActionsOrder = [];
-    private $rowActionsMap = [];
+    private $rowActionsOrder = array();
+    private $rowActionsMap = array();
 
     /* 分页器 */
     private $paging = array(
-        'pageSize'=>12,
+        'pageSize'=>10,
     );
 
 
@@ -102,7 +102,7 @@ class AdminList extends AdminBase
         $showFields = empty($this->fieldsOrder) ? array_keys($daoFields) : $this->fieldsOrder;
         foreach ($showFields as $field) {
             assertOrException(isset($daoFields[$field]), 'show field not exist:' . $field);
-            $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : [];
+            $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
             $config['fields'][] = array_merge(array('field'=>$field), $daoFields[$field], $setFieldParam);
         }
         // 处理搜索

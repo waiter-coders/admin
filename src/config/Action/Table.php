@@ -36,7 +36,7 @@ class Table extends Base
     private static function defaultTableActions()
     {
         return array(
-            'add'=>array('name'=>'添加', 'type'=>'page', 'url'=>''),
+            'add'=>array('name'=>'添加', 'type'=>'page', 'url'=>'editor'),
             'fastAdd'=>array('name'=>'快速添加', 'type'=>'dialog', 'url'=>'/fastAdd'),
             'batchAdd'=>array('name'=>'批量添加', 'type'=>'ajax', 'url'=>'/batchAdd')
         );

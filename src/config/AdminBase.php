@@ -1,17 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2018/6/19
- * Time: 17:41
- */
-
 namespace Waiterphp\Admin\Config;
 
-
-class AdminBase
+abstract class AdminBase
 {
     protected $dao;
+    protected $defaultQuery = array();
+    protected $type = 'base';
 
     public function __construct($dao)
     {
@@ -22,4 +16,16 @@ class AdminBase
     {
         return $this->dao;
     }
+
+    public function setDefaultQuery($condition)
+    {
+        $this->dao->setDefaultQuery($condition);
+    }
+
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    abstract public function getConfig();
 }

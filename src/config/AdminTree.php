@@ -5,10 +5,10 @@ namespace Waiterphp\Admin\Config;
 
 class AdminTree extends AdminBase
 {
-    private $type = 'admin-tree';
+    protected $type = 'adminTree';
 
-    private $nodeActionsOrder = [];
-    private $nodeActionsMap = [];
+    private $nodeActionsOrder = array();
+    private $nodeActionsMap = array();
 
     public function __construct($dao)
     {
@@ -28,6 +28,7 @@ class AdminTree extends AdminBase
     {
         $config =  array('type'=>$this->type);
         $config['primaryKey'] = $this->dao->primaryKey();
+        $config['treeKeys'] = $this->dao->getTreeKeys();
 
         // 处理节点操作
         if (!empty($this->nodeActionsOrder)) {

@@ -9,23 +9,68 @@
 namespace Waiterphp\Admin\Api;
 
 
-trait AdminForm
+class AdminForm
 {
-    abstract protected function requestConfig();
+    private $adminConfig;
+    private $adminDao;
 
-    protected function newAdminFormConfig($dao)
+    public function __construct($adminConfig)
     {
-        return new \Waiterphp\Admin\Config\AdminForm($dao);
+        $this->adminConfig = $adminConfig;
+        $this->adminDao = $adminConfig->getDao();
     }
 
-    public function submit()
+    public function getFormData($request)
     {
-        $config = $this->requestConfig();
+        $id = $request->getInt($this->adminDao->primaryKey());
+        return $this->adminDao->infoById($id);
+    }
+
+    public function formSubmit($request)
+    {
+        $id = $request->getInt($this->adminDao->primaryKey(), 0);
+        $formData = $request->getArray('formData');
+        // 新加
+        if (empty($id)) {
+            $id = $this->adminDao->insert($formData);
+        }
+        // 编辑
+        else {
+            $this->adminDao->updateById($id, $formData);
+        }
+        return $id;
+    }
+
+    public function formUpload($request)
+    {
+        $field = $request->getString('field');
+        $upload = \Lib\Upload::get($field);
+        $image = \Lib\Image::get($upload->file);
+        $basePath = IMAGE_PATH . '/product';
+        $goodsPath = $this->getGoodsPath($upload->name);
+        $image->scale(240, 180)->save($basePath . '/'. $goodsPath, true);
+        return $goodsPath;
+    }
+
+    public function formCheck()
+    {
 
     }
 
-    public function formUpload()
+    public function editorUpload($request)
     {
+        $field = $request->getString('field');
+        $upload = \Lib\Upload::get($field);
+        $image = \Lib\Image::get($upload->file);
+        $basePath = IMAGE_PATH . '/product';
+        $goodsPath = $this->getGoodsPath($upload->name);
+        $image->save($basePath . '/'. $goodsPath, true);
+        return 'http://image.teamcorp.cn/wo_de/product/'. $goodsPath;
+    }
 
+    private function getGoodsPath($filename)
+    {
+        $extend = pathinfo($filename, PATHINFO_EXTENSION);
+        return date('Y-m-d') . '/' . time() . '.' . $extend;
     }
 }

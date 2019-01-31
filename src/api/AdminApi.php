@@ -3,7 +3,7 @@ namespace Waiterphp\Admin\Api;
 
 trait AdminApi
 {
-    protected $adminConfigs = [];
+    protected $adminConfigs = array();
 
     abstract public function getConfigs();
 
@@ -16,7 +16,7 @@ trait AdminApi
     // 对外接口
     protected function getAdminConfigs()
     {
-        $response = [];
+        $response = array();
         foreach ($this->adminConfigs as $pageConfig) {
             $response[] = $pageConfig->getConfig();
         }

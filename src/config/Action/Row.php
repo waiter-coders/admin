@@ -23,9 +23,9 @@ class Row extends Base
     private static function defaultRowActions()
     {
         return array(
-            'edit'=>array('type'=>'page', 'name'=>'编辑', 'url'=>'edit'),
-            'delete'=>array('type'=>'ajax', 'name'=>'删除',  'confirm'=>'您确定要删除@data.id@吗？', 'url'=>'/delete/?@primaryKey@=@data.id@'),
-            'audit'=>array('type'=>'ajax', 'name'=>'审核',  'url'=>'/audit'),
+            'edit'=>array('type'=>'page', 'name'=>'编辑', 'url'=>'editor?@primaryKey@=@data.id@'),
+            'delete'=>array('type'=>'ajax', 'name'=>'删除',  'confirm'=>'您确定要删除@data.id@吗？', 'url'=>'delete/?@primaryKey@=@data.id@'),
+            'audit'=>array('type'=>'ajax', 'name'=>'审核',  'url'=>'audit'),
         );
     }
 
