@@ -3,7 +3,7 @@
   "description": "waiterphp后台类库",
   "type": "library",
   "require": {
-    "waiterphp/core": "^0.1.0"
+    "waiterphp/core": "^0.0.0"
   },  "license": "MIT",
   "autoload": {
     "psr-4": {
