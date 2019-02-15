@@ -27,6 +27,33 @@ class AdminForm extends AdminBase
         $this->fieldsOrder = $fields;
     }
 
+    public function setFile($field, $basePath, $baseUrl, $pathType = 'date')
+    {
+        assertOrException();
+    }
+
+    public function setImage($field, $basePath, $baseUrl, $width, $height, $pathType = 'date')
+    {
+        // assertOrException(isset($this->fieldsMap[$field]), 'not has show field :' . $field);
+        $this->fieldsMap[$field]['type'] = 'image';
+        $this->fieldsMap[$field]['basePath'] = $basePath;
+        $this->fieldsMap[$field]['baseUrl'] = $baseUrl;
+        $this->fieldsMap[$field]['width'] = $width;
+        $this->fieldsMap[$field]['height'] = $height;
+        $this->fieldsMap[$field]['pathType'] = $pathType;
+    }
+
+    public function setEditor($field, $basePath, $baseUrl, $width, $height, $pathType = 'date')
+    {
+        // assertOrException(isset($this->fieldsMap[$field]), 'not has show field :' . $field);
+        $this->fieldsMap[$field]['type'] = 'editor';
+        $this->fieldsMap[$field]['basePath'] = $basePath;
+        $this->fieldsMap[$field]['baseUrl'] = $baseUrl;
+        $this->fieldsMap[$field]['width'] = $width;
+        $this->fieldsMap[$field]['height'] = $height;
+        $this->fieldsMap[$field]['pathType'] = $pathType;
+    }
+
     public function setRatio($field)
     {
         $this->fieldsMap[$field]['showType'] = 'radio';
@@ -73,6 +100,13 @@ class AdminForm extends AdminBase
         return $this->fieldDefaultValue;
     }
 
+    public function getField($field)
+    {
+        $daoField = $this->dao->getField($field);
+        $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
+        return array_merge(array('field'=>$field), $daoField, $setFieldParam);
+    }
+
     public function getConfig()
     {
         $config =  array('type'=>$this->type);
@@ -80,7 +114,7 @@ class AdminForm extends AdminBase
         $daoFields = $this->dao->getFieldsInfo('main');
         $showFields = empty($this->fieldsOrder) ? array_keys($daoFields) : $this->fieldsOrder;
         foreach ($showFields as $field) {
-            assert_exception(isset($daoFields[$field]), 'show field not exist:' . $field);
+            assertOrException(isset($daoFields[$field]), 'show field not exist:' . $field);
             $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
             $config['fields'][] = array_merge(array('field'=>$field), $daoFields[$field], $setFieldParam);
         }

@@ -101,14 +101,14 @@ class AdminList extends AdminBase
         $daoFields = $this->dao->getFieldsInfo('main');
         $showFields = empty($this->fieldsOrder) ? array_keys($daoFields) : $this->fieldsOrder;
         foreach ($showFields as $field) {
-            assert_exception(isset($daoFields[$field]), 'show field not exist:' . $field);
+            assertOrException(isset($daoFields[$field]), 'show field not exist:' . $field);
             $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
             $config['fields'][] = array_merge(array('field'=>$field), $daoFields[$field], $setFieldParam);
         }
         // 处理搜索
         if (!empty($this->search['fieldsOrder'])) {
             foreach ($this->search['fieldsOrder'] as $searchField) {
-                assert_exception(isset($daoFields[$searchField]), 'search field not exist:' . $searchField);
+                assertOrException(isset($daoFields[$searchField]), 'search field not exist:' . $searchField);
                 $config['search'][] = array_merge(array('field'=>$searchField), $this->search['fieldsMap'][$searchField]);
             }
         }

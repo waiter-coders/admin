@@ -19,6 +19,39 @@ class AdminList
         $this->adminDao = $adminConfig->getDao();
     }
 
+    public function getList($request)
+    {
+        $search = $request->getArray('search', array());
+        $limit = $request->getInt('limit', 15);
+        $offset = $request->getInt('offset', 0);
+        return $this->adminDao->where($this->formatSearch($search))->limit($limit)->offset($offset)->getList();
+    }
+
+    public function getTotalNum($request)
+    {
+        $search = $request->getArray('search', array());
+        return $this->adminDao->where($this->formatSearch($search))->count();
+    }
+
+    public function delete($request)
+    {
+        $primaryKey = $this->adminDao->primaryKey();
+        $id = $request->getInt($primaryKey);
+        return $this->adminDao->deleteById($id);
+    }
+
+    public function batchDelete($request)
+    {
+        $primaryKey = $this->adminDao->primaryKey();
+        $ids = $request->getArray($primaryKey);
+        return $this->adminDao->deleteByIds($ids);
+    }
+
+    public function update($request)
+    {
+
+    }
+
     private function formatSearch($search)
     {
         $where = array();
@@ -39,42 +72,6 @@ class AdminList
             }
         }
         return $where;
-    }
-
-    public function getList($request)
-    {
-        $search = $request->getArray('search', array());
-        $limit = $request->getInt('limit', 15);
-        $offset = $request->getInt('offset', 0);
-        return $this->adminDao->where($this->formatSearch($search))->limit($limit)->offset($offset)->getList();
-    }
-
-    public function getTotalNum($request)
-    {
-        $search = $request->getArray('search', array());
-        return $this->adminDao->where($this->formatSearch($search))->count();
-    }
-
-    public function delete($request)
-    {
-        $id = $request->getInt('productId');
-        return $this->adminDao->deleteById($id);
-    }
-
-    public function batchDelete($request)
-    {
-        $ids = $request->getArray('ids');
-        return $this->adminDao->deleteByIds($ids);
-    }
-
-    public function update($request)
-    {
-
-    }
-
-    public function download()
-    {
-
     }
 
 }

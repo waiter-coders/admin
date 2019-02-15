@@ -22,16 +22,20 @@ class AdminForm
 
     public function getFormData($request)
     {
-        $id = $request->getInt($this->adminDao->primaryKey());
+        $primaryKey = $this->adminDao->primaryKey();
+        $id = $request->getInt($primaryKey);
         return $this->adminDao->infoById($id);
     }
 
     public function formSubmit($request)
     {
-        $id = $request->getInt($this->adminDao->primaryKey(), 0);
+        $primaryKey = $this->adminDao->primaryKey();
+        $id = $request->getInt($primaryKey, 0);
         $formData = $request->getArray('formData');
         // 新加
         if (empty($id)) {
+            $defaultData = $this->adminConfig->getFieldsDefault();
+            $formData = array_merge($defaultData, $formData);
             $id = $this->adminDao->insert($formData);
         }
         // 编辑
@@ -44,31 +48,31 @@ class AdminForm
     public function formUpload($request)
     {
         $field = $request->getString('field');
-        $upload = \Lib\Upload::get($field);
-        $image = \Lib\Image::get($upload->file);
-        $basePath = IMAGE_PATH . '/product';
-        $goodsPath = $this->getGoodsPath($upload->name);
-        $image->scale(240, 180)->save($basePath . '/'. $goodsPath, true);
-        return $goodsPath;
-    }
-
-    public function formCheck()
-    {
-
+        $fieldInfo = $this->adminConfig->getField($field);
+        assertOrException($fieldInfo['type'] == 'image', 'only type image can update' . json_encode($fieldInfo));
+        assertOrException(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
+        assertOrException(isset($fieldInfo['width']) && isset($fieldInfo['height']), 'width height set error');
+        $upload = \Tools\Upload::get($field);
+        $image = \Tools\Image::get($upload->file);
+        $datePath = $this->generateDatePath($upload->name);
+        $image->scale($fieldInfo['width'], $fieldInfo['height'])->save($fieldInfo['basePath'] . '/'. $datePath, true);
+        return $datePath;
     }
 
     public function editorUpload($request)
     {
         $field = $request->getString('field');
-        $upload = \Lib\Upload::get($field);
-        $image = \Lib\Image::get($upload->file);
-        $basePath = IMAGE_PATH . '/product';
-        $goodsPath = $this->getGoodsPath($upload->name);
-        $image->save($basePath . '/'. $goodsPath, true);
-        return 'http://image.teamcorp.cn/wo_de/product/'. $goodsPath;
+        $fieldInfo = $this->adminConfig->getField($field);
+        assertOrException($fieldInfo['type'] == 'editor', 'not editor' . json_encode($fieldInfo));
+        assertOrException(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
+        $upload = \Tools\Upload::get($field);
+        $image = \Tools\Image::get($upload->file);
+        $datePath = $this->generateDatePath($upload->name);
+        $image->save($fieldInfo['basePath'] .  '/'. $datePath, true);
+        return $datePath;
     }
 
-    private function getGoodsPath($filename)
+    private function generateDatePath($filename)
     {
         $extend = pathinfo($filename, PATHINFO_EXTENSION);
         return date('Y-m-d') . '/' . time() . '.' . $extend;
