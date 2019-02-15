@@ -29,12 +29,12 @@ class AdminForm extends AdminBase
 
     public function setFile($field, $basePath, $baseUrl, $pathType = 'date')
     {
-        assertOrException();
+        assert_exception();
     }
 
     public function setImage($field, $basePath, $baseUrl, $width, $height, $pathType = 'date')
     {
-        // assertOrException(isset($this->fieldsMap[$field]), 'not has show field :' . $field);
+        // assert_exception(isset($this->fieldsMap[$field]), 'not has show field :' . $field);
         $this->fieldsMap[$field]['type'] = 'image';
         $this->fieldsMap[$field]['basePath'] = $basePath;
         $this->fieldsMap[$field]['baseUrl'] = $baseUrl;
@@ -45,7 +45,7 @@ class AdminForm extends AdminBase
 
     public function setEditor($field, $basePath, $baseUrl, $width, $height, $pathType = 'date')
     {
-        // assertOrException(isset($this->fieldsMap[$field]), 'not has show field :' . $field);
+        // assert_exception(isset($this->fieldsMap[$field]), 'not has show field :' . $field);
         $this->fieldsMap[$field]['type'] = 'editor';
         $this->fieldsMap[$field]['basePath'] = $basePath;
         $this->fieldsMap[$field]['baseUrl'] = $baseUrl;
@@ -114,7 +114,7 @@ class AdminForm extends AdminBase
         $daoFields = $this->dao->getFieldsInfo('main');
         $showFields = empty($this->fieldsOrder) ? array_keys($daoFields) : $this->fieldsOrder;
         foreach ($showFields as $field) {
-            assertOrException(isset($daoFields[$field]), 'show field not exist:' . $field);
+            assert_exception(isset($daoFields[$field]), 'show field not exist:' . $field);
             $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
             $config['fields'][] = array_merge(array('field'=>$field), $daoFields[$field], $setFieldParam);
         }

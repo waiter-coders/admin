@@ -20,7 +20,7 @@ trait Dashboard
         $action = $request->getString('action');
         $dashboard = $this->dashboard($request);
         $plate = $dashboard->get($plateId);
-        assertOrException($plate != null, 'plate not set');
+        assert_exception($plate != null, 'plate not set');
         $apiObject = instance('tools.admin.api.'.$plate->getType(), $plate);        
         return call_user_func_array(array($apiObject, $action), array($request));
     }

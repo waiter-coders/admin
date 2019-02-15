@@ -49,9 +49,9 @@ class AdminForm
     {
         $field = $request->getString('field');
         $fieldInfo = $this->adminConfig->getField($field);
-        assertOrException($fieldInfo['type'] == 'image', 'only type image can update' . json_encode($fieldInfo));
-        assertOrException(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
-        assertOrException(isset($fieldInfo['width']) && isset($fieldInfo['height']), 'width height set error');
+        assert_exception($fieldInfo['type'] == 'image', 'only type image can update' . json_encode($fieldInfo));
+        assert_exception(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
+        assert_exception(isset($fieldInfo['width']) && isset($fieldInfo['height']), 'width height set error');
         $upload = \Tools\Upload::get($field);
         $image = \Tools\Image::get($upload->file);
         $datePath = $this->generateDatePath($upload->name);
@@ -63,8 +63,8 @@ class AdminForm
     {
         $field = $request->getString('field');
         $fieldInfo = $this->adminConfig->getField($field);
-        assertOrException($fieldInfo['type'] == 'editor', 'not editor' . json_encode($fieldInfo));
-        assertOrException(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
+        assert_exception($fieldInfo['type'] == 'editor', 'not editor' . json_encode($fieldInfo));
+        assert_exception(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
         $upload = \Tools\Upload::get($field);
         $image = \Tools\Image::get($upload->file);
         $datePath = $this->generateDatePath($upload->name);
