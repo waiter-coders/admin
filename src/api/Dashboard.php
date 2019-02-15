@@ -11,7 +11,7 @@ trait Dashboard
     public function __construct()
     {
         $this->dashboard = $this->dashboard();
-        assertOrException($this->dashboard instanceof DashboardConfig, 'dashboard not return DashboardConfig');
+        assert_exception($this->dashboard instanceof DashboardConfig, 'dashboard not return DashboardConfig');
     }
 
     abstract protected function dashboard();
@@ -25,7 +25,7 @@ trait Dashboard
     {
         $plateId = $request->getInt('index', 0);
         $palte = $this->dashboard->get($plateId);
-        assertOrException($palte != null, 'plate not set');
+        assert_exception($palte != null, 'plate not set');
         $api = $this->fetchApiObject($palte);
         $action = $request->getString('action');
         return call_user_func_array(array($api, $action), array($request));
