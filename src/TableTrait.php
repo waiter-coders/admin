@@ -1,27 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2018/6/19
- * Time: 17:28
- */
+namespace Waiterphp\Admin;
 
-namespace Waiterphp\Admin\Api;
-
-class AdminList
+trait TableTrait
 {
-    private $adminConfig;
-    private $adminDao;
-
-    public function __construct($adminConfig)
-    {
-        $this->adminConfig = $adminConfig;
-        $this->adminDao = $adminConfig->getDao();
-    }
+    use BaseTrait;
 
     public function getList($request)
     {
-        $search = $request->getArray('search', array());
+        $search = $request->getArray('search', []);
         $limit = $request->getInt('limit', 15);
         $offset = $request->getInt('offset', 0);
         return $this->adminDao->where($this->formatSearch($search))->limit($limit)->offset($offset)->getList();
@@ -29,7 +15,7 @@ class AdminList
 
     public function getTotalNum($request)
     {
-        $search = $request->getArray('search', array());
+        $search = $request->getArray('search', []);
         return $this->adminDao->where($this->formatSearch($search))->count();
     }
 
@@ -54,10 +40,10 @@ class AdminList
 
     private function formatSearch($search)
     {
-        $where = array();
+        $where = [];
         $config = $this->adminConfig->getConfig();
         if (empty($search) || !isset($config['search'])) {
-            return array();
+            return [];
         }
         foreach ($config['search'] as $row) {
             if (isset($search[$row['field']])) {

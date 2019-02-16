@@ -1,7 +1,7 @@
 <?php
 namespace Waiterphp\Admin\Config;
 
-abstract class AdminBase
+abstract class Base
 {
     protected $dao;
     protected $defaultQuery = array();

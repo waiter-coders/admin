@@ -22,10 +22,10 @@ class Form extends Base
 
     private static function defaultRowActions()
     {
-        return array(
-            'edit'=>array('type'=>'ajax', 'name'=>'编辑', 'url'=>'formSubmit?@primaryKey@=@data.id@'),
-            'add'=>array('type'=>'ajax', 'name'=>'添加',  'url'=>'formSubmit'),
-        );
+        return [
+            'edit'=>['type'=>'ajax', 'name'=>'编辑', 'url'=>'formSubmit?@primaryKey@=@data.id@'],
+            'add'=>['type'=>'ajax', 'name'=>'添加',  'url'=>'formSubmit'],
+        ];
     }
 
 }

@@ -15,9 +15,9 @@ class TreeNode extends Base
 
     private static function defaultRowActions()
     {
-        return array(
-            'edit'=>array('type'=>'page', 'name'=>'编辑', 'url'=>'edit'),
-            'delete'=>array('type'=>'ajax', 'name'=>'删除',  'confirm'=>'您确定要删除@data.id@吗？', 'url'=>'/delete/?@primaryKey@=@data.id@'),
-        );
+        return [
+            'edit'=>['type'=>'page', 'name'=>'编辑', 'url'=>'edit'],
+            'delete'=>['type'=>'ajax', 'name'=>'删除',  'confirm'=>'您确定要删除@data.id@吗？', 'url'=>'/delete/?@primaryKey@=@data.id@'],
+        ];
     }
 }

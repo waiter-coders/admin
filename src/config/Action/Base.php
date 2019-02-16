@@ -10,19 +10,19 @@ namespace Waiterphp\Admin\Config\Action;
 
 class Base
 {
-    protected static $typeMap = array(
+    protected static $typeMap = [
         'page'=>1,
         'ajax'=>2,
-    );
+    ];
 
-    protected $config = array(
+    protected $config = [
         'id'=>'',
         'type'=>'page',
         'isShow'=>true,
         'isDisabled'=>false,
         'url'=>'',
         'name'=>'',
-    );
+    ];
 
     public function __construct($action)
     {

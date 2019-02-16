@@ -3,12 +3,12 @@
 namespace Waiterphp\Admin\Config;
 
 
-class AdminTree extends AdminBase
+class Tree extends Base
 {
     protected $type = 'adminTree';
 
-    private $nodeActionsOrder = array();
-    private $nodeActionsMap = array();
+    private $nodeActionsOrder = [];
+    private $nodeActionsMap = [];
 
     public function __construct($dao)
     {
@@ -26,14 +26,14 @@ class AdminTree extends AdminBase
 
     public function getConfig()
     {
-        $config =  array('type'=>$this->type);
-        $config['primaryKey'] = $this->dao->primaryKey();
-        $config['treeKeys'] = $this->dao->getTreeKeys();
+        $config =  ['type'=>$this->type];
+        $config['primaryKey'] = $this->adminDao->primaryKey();
+        $config['treeKeys'] = $this->adminDao->getTreeKeys();
 
         // 处理节点操作
         if (!empty($this->nodeActionsOrder)) {
             foreach($this->nodeActionsOrder as $action) {
-                $config['tableActions'][] = call_user_func(array($this->nodeActionsMap[$action], 'getConfig'));
+                $config['tableActions'][] = call_user_func([$this->nodeActionsMap[$action], 'getConfig']);
             }
         }
 

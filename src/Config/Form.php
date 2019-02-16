@@ -3,18 +3,18 @@
 namespace Waiterphp\Admin\Config;
 
 
-class AdminForm extends AdminBase
+class Form extends Base
 {
     protected $type = 'adminForm';
 
-    private $fieldsOrder = array();
-    private $fieldsMap = array();
-    private $groups = array();
+    private $fieldsOrder = [];
+    private $fieldsMap = [];
+    private $groups = [];
     private $dataId = 0;
     private $url = '';
-    private $formActionMap = array();
-    private $formActionOrder = array();
-    private $fieldDefaultValue = array();
+    private $formActionMap = [];
+    private $formActionOrder = [];
+    private $fieldDefaultValue = [];
 
     public function __construct($dao)
     {
@@ -68,7 +68,7 @@ class AdminForm extends AdminBase
     {
         $fields = func_get_args();
         $name = array_pop($fields);
-        $this->groups[] = array('name'=>$name, 'fields'=>$fields);
+        $this->groups[] = ['name'=>$name, 'fields'=>$fields];
     }
 
     public function setUrl($url)
@@ -102,32 +102,32 @@ class AdminForm extends AdminBase
 
     public function getField($field)
     {
-        $daoField = $this->dao->getField($field);
-        $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
-        return array_merge(array('field'=>$field), $daoField, $setFieldParam);
+        $daoField = $this->adminDao->getField($field);
+        $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : [];
+        return array_merge(['field'=>$field], $daoField, $setFieldParam);
     }
 
     public function getConfig()
     {
-        $config =  array('type'=>$this->type);
+        $config =  ['type'=>$this->type];
         // 处理显示字段
-        $daoFields = $this->dao->getFieldsInfo('main');
+        $daoFields = $this->adminDao->getFieldsInfo('main');
         $showFields = empty($this->fieldsOrder) ? array_keys($daoFields) : $this->fieldsOrder;
         foreach ($showFields as $field) {
             assert_exception(isset($daoFields[$field]), 'show field not exist:' . $field);
-            $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : array();
-            $config['fields'][] = array_merge(array('field'=>$field), $daoFields[$field], $setFieldParam);
+            $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : [];
+            $config['fields'][] = array_merge(['field'=>$field], $daoFields[$field], $setFieldParam);
         }
         // 处理分组
         $config['groups'] = $this->groups;
 
-        $config['primaryKey'] = $this->dao->primaryKey();
+        $config['primaryKey'] = $this->adminDao->primaryKey();
 
         // 处理action
         // 处理行操作
         if (!empty($this->formActionOrder)) {
             foreach($this->formActionOrder as $action) {
-                $config['actions'][] = call_user_func(array($this->formActionMap[$action], 'getConfig'));
+                $config['actions'][] = call_user_func([$this->formActionMap[$action], 'getConfig']);
             }
         }
         return $config;

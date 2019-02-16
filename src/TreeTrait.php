@@ -1,16 +1,16 @@
 <?php
-namespace Waiterphp\Admin\Api;
+namespace Waiterphp\Admin;
 
-use Tools\Request as Request;
-
-class AdminTree
+trait TreeTrait
 {
+    use BaseTrait;
+
     private $adminConfig;
     private $adminDao;
 
     public function __construct($adminConfig)
     {
-        $this->adminConfig = $adminConfig;
+        $this->config = $adminConfig;
         $this->adminDao = $adminConfig->getDao();
     }
 

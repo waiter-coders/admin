@@ -6,19 +6,12 @@
  * Time: 17:28
  */
 
-namespace Waiterphp\Admin\Api;
+namespace Waiterphp\Admin;
 
 
-class AdminForm
+trait FormTrait
 {
-    private $adminConfig;
-    private $adminDao;
-
-    public function __construct($adminConfig)
-    {
-        $this->adminConfig = $adminConfig;
-        $this->adminDao = $adminConfig->getDao();
-    }
+    use BaseTrait;
 
     public function getFormData($request)
     {

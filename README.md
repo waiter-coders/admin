@@ -56,3 +56,6 @@ builder admin.list record.simpleList --table user_table --model record
 8. 列表支持数据转化和局部隐藏
 
 ### 
+
+
+

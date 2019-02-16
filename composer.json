@@ -7,9 +7,7 @@
   },  "license": "MIT",
   "autoload": {
     "psr-4": {
-      "Waiterphp\\Admin\\Api\\": "src/api/",
-      "Waiterphp\\Admin\\Config\\": "src/config/",
-      "Waiterphp\\Admin\\Builder\\": "src/builder/"
+      "Waiterphp\\Admin\\": "src/"
     }
   },
   "autoload-dev": {
