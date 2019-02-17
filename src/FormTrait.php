@@ -15,25 +15,25 @@ trait FormTrait
 
     public function getFormData($request)
     {
-        $primaryKey = $this->adminDao->primaryKey();
+        $primaryKey = $this->dao->primaryKey();
         $id = $request->getInt($primaryKey);
-        return $this->adminDao->infoById($id);
+        return $this->dao->infoById($id);
     }
 
     public function formSubmit($request)
     {
-        $primaryKey = $this->adminDao->primaryKey();
+        $primaryKey = $this->dao->primaryKey();
         $id = $request->getInt($primaryKey, 0);
         $formData = $request->getArray('formData');
         // 新加
         if (empty($id)) {
-            $defaultData = $this->adminConfig->getFieldsDefault();
+            $defaultData = $this->config->getFieldsDefault();
             $formData = array_merge($defaultData, $formData);
-            $id = $this->adminDao->insert($formData);
+            $id = $this->dao->insert($formData);
         }
         // 编辑
         else {
-            $this->adminDao->updateById($id, $formData);
+            $this->dao->updateById($id, $formData);
         }
         return $id;
     }
@@ -41,7 +41,7 @@ trait FormTrait
     public function formUpload($request)
     {
         $field = $request->getString('field');
-        $fieldInfo = $this->adminConfig->getField($field);
+        $fieldInfo = $this->config->getField($field);
         assert_exception($fieldInfo['type'] == 'image', 'only type image can update' . json_encode($fieldInfo));
         assert_exception(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
         assert_exception(isset($fieldInfo['width']) && isset($fieldInfo['height']), 'width height set error');
@@ -55,7 +55,7 @@ trait FormTrait
     public function editorUpload($request)
     {
         $field = $request->getString('field');
-        $fieldInfo = $this->adminConfig->getField($field);
+        $fieldInfo = $this->config->getField($field);
         assert_exception($fieldInfo['type'] == 'editor', 'not editor' . json_encode($fieldInfo));
         assert_exception(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
         $upload = \Tools\Upload::get($field);

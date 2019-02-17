@@ -10,27 +10,27 @@ trait TableTrait
         $search = $request->getArray('search', []);
         $limit = $request->getInt('limit', 15);
         $offset = $request->getInt('offset', 0);
-        return $this->adminDao->where($this->formatSearch($search))->limit($limit)->offset($offset)->getList();
+        return $this->dao->where($this->formatSearch($search))->limit($limit)->offset($offset)->getList();
     }
 
     public function getTotalNum($request)
     {
         $search = $request->getArray('search', []);
-        return $this->adminDao->where($this->formatSearch($search))->count();
+        return $this->dao->where($this->formatSearch($search))->count();
     }
 
     public function delete($request)
     {
-        $primaryKey = $this->adminDao->primaryKey();
+        $primaryKey = $this->dao->primaryKey();
         $id = $request->getInt($primaryKey);
-        return $this->adminDao->deleteById($id);
+        return $this->dao->deleteById($id);
     }
 
     public function batchDelete($request)
     {
-        $primaryKey = $this->adminDao->primaryKey();
+        $primaryKey = $this->dao->primaryKey();
         $ids = $request->getArray($primaryKey);
-        return $this->adminDao->deleteByIds($ids);
+        return $this->dao->deleteByIds($ids);
     }
 
     public function update($request)
@@ -41,7 +41,7 @@ trait TableTrait
     private function formatSearch($search)
     {
         $where = [];
-        $config = $this->adminConfig->getConfig();
+        $config = $this->config->getConfig();
         if (empty($search) || !isset($config['search'])) {
             return [];
         }

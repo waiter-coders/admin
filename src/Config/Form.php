@@ -102,7 +102,7 @@ class Form extends Base
 
     public function getField($field)
     {
-        $daoField = $this->adminDao->getField($field);
+        $daoField = $this->dao->getField($field);
         $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : [];
         return array_merge(['field'=>$field], $daoField, $setFieldParam);
     }
@@ -111,7 +111,7 @@ class Form extends Base
     {
         $config =  ['type'=>$this->type];
         // 处理显示字段
-        $daoFields = $this->adminDao->getFieldsInfo('main');
+        $daoFields = $this->dao->getFieldsInfo('main');
         $showFields = empty($this->fieldsOrder) ? array_keys($daoFields) : $this->fieldsOrder;
         foreach ($showFields as $field) {
             assert_exception(isset($daoFields[$field]), 'show field not exist:' . $field);
@@ -121,7 +121,7 @@ class Form extends Base
         // 处理分组
         $config['groups'] = $this->groups;
 
-        $config['primaryKey'] = $this->adminDao->primaryKey();
+        $config['primaryKey'] = $this->dao->primaryKey();
 
         // 处理action
         // 处理行操作

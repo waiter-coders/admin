@@ -12,12 +12,4 @@ trait LayoutTrait
 {
     use BaseTrait;
 
-    private $adminConfig;
-    private $adminDao;
-
-    public function __construct($adminConfig)
-    {
-        $this->config = $adminConfig;
-        $this->adminDao = $adminConfig->getDao();
-    }
 }

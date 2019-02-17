@@ -27,8 +27,8 @@ class Tree extends Base
     public function getConfig()
     {
         $config =  ['type'=>$this->type];
-        $config['primaryKey'] = $this->adminDao->primaryKey();
-        $config['treeKeys'] = $this->adminDao->getTreeKeys();
+        $config['primaryKey'] = $this->dao->primaryKey();
+        $config['treeKeys'] = $this->dao->getTreeKeys();
 
         // 处理节点操作
         if (!empty($this->nodeActionsOrder)) {

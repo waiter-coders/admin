@@ -5,20 +5,20 @@ use Waiterphp\Admin\Config\Base as ConfigBase;
 
 trait BaseTrait
 {
-    protected $adminConfig;
-    protected $adminDao;
+    protected $config;
+    protected $dao;
 
     public function __construct()
     {
-        $this->adminConfig = $this->setConfig();
-        assert_exception($this->adminConfig instanceof ConfigBase, 'Config not admin config');
-        $this->adminDao = $this->adminConfig->getDao();
+        $this->config = $this->setConfig();
+        assert_exception($this->config instanceof ConfigBase, 'Config not admin config');
+        $this->dao = $this->config->getDao();
     }
 
     abstract protected function setConfig();
 
     public function getConfig()
     {
-        return $this->adminConfig->getConfig();
+        return $this->config->getConfig();
     }
 }

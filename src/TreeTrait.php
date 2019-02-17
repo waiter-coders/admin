@@ -5,19 +5,10 @@ trait TreeTrait
 {
     use BaseTrait;
 
-    private $adminConfig;
-    private $adminDao;
-
-    public function __construct($adminConfig)
-    {
-        $this->config = $adminConfig;
-        $this->adminDao = $adminConfig->getDao();
-    }
-
     public function getTree(Request $request)
     {
         $nodeId = $request->getInt('nodeId', 0);
-        $nodes = $this->adminDao->getTree($nodeId);
+        $nodes = $this->dao->getTree($nodeId);
         return $nodes;
     }
 
@@ -26,7 +17,7 @@ trait TreeTrait
         $label = $request->getString('label');
         $moveToId = $request->getInt('moveToId', 0);
         $moveType = $request->getString('moveType', 'after');
-        $nodeId = $this->adminDao->addNode($label, $moveToId, $moveType);
+        $nodeId = $this->dao->addNode($label, $moveToId, $moveType);
         return $nodeId;
     }
 
@@ -34,7 +25,7 @@ trait TreeTrait
     {
         $nodeId = $request->getInt('nodeId');
         $label = $request->getString('label');
-        return $this->adminDao->changeNodeLabel($nodeId, $label);
+        return $this->dao->changeNodeLabel($nodeId, $label);
     }
 
 
@@ -42,7 +33,7 @@ trait TreeTrait
     public function deleteNode(Request $request)
     {
         $nodeId = $request->getInt('nodeId');
-        return $this->adminDao->deleteNode($nodeId);
+        return $this->dao->deleteNode($nodeId);
     }
 
     public function changeNodePosition(Request $request)
@@ -50,6 +41,6 @@ trait TreeTrait
         $nodeId = $request->getInt('nodeId');
         $moveToId = $request->getInt('moveToId');
         $moveType = $request->getString('moveType');
-        return $this->adminDao->changeNodePosition($nodeId, $moveToId, $moveType);
+        return $this->dao->changeNodePosition($nodeId, $moveToId, $moveType);
     }
 }
