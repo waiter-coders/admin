@@ -4,6 +4,8 @@ namespace Waiterphp\Admin\Tests;
 use Waiterphp\Admin\TableTrait as TableTrait;
 use \Waiterphp\Admin\Config\Table as TableConfig;
 
+use \Waiterphp\Core\Filter\FilterTrait as FilterTrait;
+
 class TestTableTrait extends TestCase
 {
     private $controller;
@@ -13,13 +15,21 @@ class TestTableTrait extends TestCase
     {
         parent::SetUp();
         $this->controller = new Table();
-        $this->request = '';
+        $this->request = new Request([
+
+        ]);
     }
 
     public function test_getConfig()
     {
         $config = $this->controller->getConfig($this->request);
-        var_dump($config);
+        $this->assertTrue(!empty($config));
+    }
+
+    public function test_getList()
+    {
+        $list = $this->controller->getList($this->request);var_dump($list);
+        $this->assertTrue(!empty($list));
     }
 }
 
@@ -27,7 +37,7 @@ class Table
 {
     use TableTrait;
 
-    protected function  setConfig()
+    protected function setConfig()
     {
         return new TableConfig(new ExamChoiceModel());
     }
@@ -54,4 +64,16 @@ class ExamChoiceModel
         $this->daoConfig->setField('answer', 'number', '');
         $this->daoConfig->setField('analysis', 'string', '');
     }
+}
+
+
+class Request
+{
+    use FilterTrait;
+
+    public function __construct($data)
+    {
+        $this->setData($data);
+    }
+
 }
