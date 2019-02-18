@@ -5,7 +5,7 @@ namespace Waiterphp\Admin\Config;
 
 class Form extends Base
 {
-    protected $type = 'adminForm';
+    protected $type = 'AdminForm';
 
     private $fieldsOrder = [];
     private $fieldsMap = [];

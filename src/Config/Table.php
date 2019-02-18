@@ -5,7 +5,7 @@ namespace Waiterphp\Admin\Config;
 
 class Table extends Base
 {
-    protected $type = 'table';
+    protected $type = 'AdminTable';
 
     /* 表格字段和字段属性 */
     private $fieldsOrder = [];

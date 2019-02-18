@@ -5,7 +5,7 @@ namespace Waiterphp\Admin\Config;
 
 class Tree extends Base
 {
-    protected $type = 'adminTree';
+    protected $type = 'AdminTree';
 
     private $nodeActionsOrder = [];
     private $nodeActionsMap = [];

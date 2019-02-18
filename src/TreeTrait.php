@@ -5,14 +5,14 @@ trait TreeTrait
 {
     use BaseTrait;
 
-    public function getTree(Request $request)
+    public function getTree($request)
     {
         $nodeId = $request->getInt('nodeId', 0);
         $nodes = $this->dao->getTree($nodeId);
         return $nodes;
     }
 
-    public function addNode(Request $request)
+    public function addNode($request)
     {
         $label = $request->getString('label');
         $moveToId = $request->getInt('moveToId', 0);
@@ -21,7 +21,7 @@ trait TreeTrait
         return $nodeId;
     }
 
-    public function changeNodeLabel(Request $request)
+    public function changeNodeLabel($request)
     {
         $nodeId = $request->getInt('nodeId');
         $label = $request->getString('label');
@@ -30,13 +30,13 @@ trait TreeTrait
 
 
 
-    public function deleteNode(Request $request)
+    public function deleteNode($request)
     {
         $nodeId = $request->getInt('nodeId');
         return $this->dao->deleteNode($nodeId);
     }
 
-    public function changeNodePosition(Request $request)
+    public function changeNodePosition($request)
     {
         $nodeId = $request->getInt('nodeId');
         $moveToId = $request->getInt('moveToId');
