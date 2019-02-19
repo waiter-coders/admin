@@ -13,14 +13,14 @@ trait FormTrait
 {
     use BaseTrait;
 
-    public function getFormData($request)
+    public function fetchData($request)
     {
         $primaryKey = $this->dao->primaryKey();
         $id = $request->getInt($primaryKey);
         return $this->dao->infoById($id);
     }
 
-    public function formSubmit($request)
+    public function submit($request)
     {
         $primaryKey = $this->dao->primaryKey();
         $id = $request->getInt($primaryKey, 0);
@@ -38,36 +38,40 @@ trait FormTrait
         return $id;
     }
 
-    public function formUpload($request)
+    public function upload($request)
     {
         $field = $request->getString('field');
         $fieldInfo = $this->config->getField($field);
-        assert_exception($fieldInfo['type'] == 'image', 'only type image can update' . json_encode($fieldInfo));
         assert_exception(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
+        if ($fieldInfo['type'] == 'image') {
         assert_exception(isset($fieldInfo['width']) && isset($fieldInfo['height']), 'width height set error');
-        $upload = \Tools\Upload::get($field);
-        $image = \Tools\Image::get($upload->file);
-        $datePath = $this->generateDatePath($upload->name);
-        $image->scale($fieldInfo['width'], $fieldInfo['height'])->save($fieldInfo['basePath'] . '/'. $datePath, true);
-        return $datePath;
+            return $this->uploadImage($field, $fieldInfo['basePath'], $fieldInfo['width'], $fieldInfo['height']);
+        }
+        if ($fieldInfo['type'] == 'editor') {
+            return $this->uploadImage($field, $fieldInfo['basePath']);
+        }
+        throw new \Exception('not support upload type:' . $fieldInfo['field']);
+        
     }
 
-    public function editorUpload($request)
-    {
-        $field = $request->getString('field');
-        $fieldInfo = $this->config->getField($field);
-        assert_exception($fieldInfo['type'] == 'editor', 'not editor' . json_encode($fieldInfo));
-        assert_exception(isset($fieldInfo['basePath']) && is_dir($fieldInfo['basePath']), 'base path error');
-        $upload = \Tools\Upload::get($field);
-        $image = \Tools\Image::get($upload->file);
-        $datePath = $this->generateDatePath($upload->name);
-        $image->save($fieldInfo['basePath'] .  '/'. $datePath, true);
-        return $datePath;
+    private function uploadImage($field, $basePath, $width = 0, $height = 0, $pathType = 'date')
+    {        
+        $upload = \Waiterphp\Core\Upload\Upload::get($field);
+        $image = \Waiterphp\Core\Image\Image::get($upload->file);
+        $filePath = $this->generatePath($pathType, $upload->name);
+        if ($width != 0 && $height != 0) {
+            $image = $image->scale($width, $height);
+        }
+        $image->save($basePath . '/'. $filePath, true);
+        return $filePath;
     }
 
-    private function generateDatePath($filename)
+    private function generatePath($pathType, $filename)
     {
         $extend = pathinfo($filename, PATHINFO_EXTENSION);
-        return date('Y-m-d') . '/' . time() . '.' . $extend;
+        if ($pathType == 'date') {
+            return date('Y-m-d') . '/' . time() . '.' . $extend;
+        }
+        return $filename;
     }
 }
