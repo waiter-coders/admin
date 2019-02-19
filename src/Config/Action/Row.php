@@ -23,7 +23,7 @@ class Row extends Base
     private static function defaultRowActions()
     {
         return [
-            'edit'=>['type'=>'page', 'name'=>'编辑', 'url'=>'editor?@primaryKey@=@data.id@'],
+            'edit'=>['type'=>'page', 'name'=>'编辑'],
             'delete'=>[
                 'type'=>'ajax', 'name'=>'删除',
                 'confirm'=>'您确定要删除@data.id@吗？',

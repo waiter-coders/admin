@@ -11,7 +11,8 @@
 ```$xslt
 composer create-project waiterphp/app admin
 cd admin
-builder admin.project
+chmod 755 storage/ -R
+php build admin
 ```
 请先修改数据库的配置信息。
 
@@ -20,7 +21,7 @@ builder admin.project
 以构建列表页为例，可通过builder构建：
 
 ```
-builder admin.list record.simpleList --table user_table --model record
+php build admin.table --table user_table --path basePath
 ```
 项目会以table名生成model，名称会被格式化为驼峰命名法。当你想自定义model的名称时，请使用model参数
 
