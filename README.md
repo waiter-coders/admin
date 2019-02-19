@@ -16,6 +16,7 @@ php build admin
 请先修改数据库的配置信息。
 
 
+
 ### 项目构建
 以构建表格列表页为例，可通过builder构建：
 
@@ -25,6 +26,8 @@ php build admin.table --table table_name --path base_path (--controller controll
 项目会以table名生成model，名称会被格式化为驼峰命名法。
 --path为model及controller的父目录，
 --controller可以自定义控制器名称
+
+> 项目构建操作后，需要自行修改config/menu.php，以便显示菜单！
 
 可使用的构建组件有：
 
