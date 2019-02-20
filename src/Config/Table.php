@@ -30,6 +30,8 @@ class Table extends Base
         'pageSize'=>10,
     ];
 
+    /* id对应的详情页链接 */
+    private $detailUrl = '';
 
     public function __construct($dao)
     {
@@ -88,6 +90,11 @@ class Table extends Base
         $this->paging['pageSize'] = (int)$size;
     }
 
+    public function setDetail($url)
+    {
+        $this->detailUrl = $url;
+    }
+
     public function getConfig()
     {
         $config =  ['type'=>$this->type];
@@ -120,6 +127,10 @@ class Table extends Base
         }
         // 处理分页
         $config['paging'] = $this->paging;
+
+        //处理详情页链接
+        $config['detail'] = $this->detailUrl;
+
         return $config;
     }
 }

@@ -52,6 +52,9 @@ trait TableTrait
                     case 'like':
                         $where[$row['field'] . ' like'] = '%' . $search[$row['field']] . '%';
                         break;
+                    case 'range':
+                        $where[$row['field'] . ' between'] = $search[$row['field']];
+                        break;
                     default:
                         $where[$row['field']] = $search[$row['field']];
                 }
