@@ -7,10 +7,12 @@ trait TableTrait
 
     public function getList($request)
     {
+        $primaryKey = $this->dao->primaryKey();
         $search = $request->getArray('search', []);
         $limit = $request->getInt('limit', 15);
         $offset = $request->getInt('offset', 0);
-        return $this->dao->where($this->formatSearch($search))->limit($limit)->offset($offset)->getList();
+        $orderBy = $request->getString('orderBy', $primaryKey . ' desc');
+        return $this->dao->where($this->formatSearch($search))->orderBy($orderBy)->limit($limit)->offset($offset)->getList();
     }
 
     public function getTotalNum($request)

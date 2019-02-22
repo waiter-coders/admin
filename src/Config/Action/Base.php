@@ -42,9 +42,15 @@ class Base
         return $this;
     }
 
-    public function setHidden(callable $callback)
+    public function setHidden()
     {
-        $this->hiddenCallback = $callback;
+        $args = func_get_args();
+        if (func_num_args() == 3) {
+            $args = [[$args[0], $args[1], $args[2]]];
+        } else {
+            $args = $args[0];
+        }
+        $this->config['hidden'] = $args;
         return $this;
     }
 

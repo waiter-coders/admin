@@ -30,6 +30,9 @@ class Table extends Base
         'pageSize'=>10,
     ];
 
+    /* 排序 */
+    private $orderFields = [];
+
     /* id对应的详情页链接 */
     private $detailUrl = '';
 
@@ -42,6 +45,12 @@ class Table extends Base
     {
         $fields = is_string($fields) ? explode(',', $fields) : $fields;
         $this->fieldsOrder = $fields;
+    }
+
+    public function setOrderFields($fields)
+    {
+        $fields = is_string($fields) ? explode(',', $fields) : $fields;
+        $this->orderFields = array_flip($fields);
     }
 
     public function setFastEdit($field)
@@ -69,6 +78,7 @@ class Table extends Base
         if (!isset($this->rowActionsMap[$action])) {
             $this->rowActionsMap[$action] = new Action\Row($action);
             $this->rowActionsMap[$action]->set('location', 'item');
+            $this->rowActionsMap[$action]->setUrl($action . '?@primaryKey@=@data.id@');
             $this->rowActionsOrder[] = $action;
         }
         return $this->rowActionsMap[$action];
@@ -104,6 +114,7 @@ class Table extends Base
         foreach ($showFields as $field) {
             assert_exception(isset($daoFields[$field]), 'show field not exist:' . $field);
             $setFieldParam = isset($this->fieldsMap[$field]) ? $this->fieldsMap[$field] : [];
+            $setFieldParam['sortable'] = (isset($this->orderFields[$field])) || (empty($this->orderFields) && $daoFields[$field]['type'] == 'number') ? true : false;
             $config['fields'][] = array_merge(['field'=>$field], $daoFields[$field], $setFieldParam);
         }
         // 处理搜索
