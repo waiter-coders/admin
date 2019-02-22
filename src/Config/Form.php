@@ -14,7 +14,6 @@ class Form extends Base
     private $url = '';
     private $formActionMap = [];
     private $formActionOrder = [];
-    private $fieldDefaultValue = [];
 
     public function __construct($dao)
     {
@@ -88,16 +87,6 @@ class Form extends Base
     public function bindQuestion($field, $bindField)
     {
         $this->fieldsMap[$field]['question'] = $bindField;
-    }
-
-    public function setFieldDefault($key, $value)
-    {
-        $this->fieldDefaultValue[$key] = $value;
-    }
-
-    public function getFieldsDefault()
-    {
-        return $this->fieldDefaultValue;
     }
 
     public function getField($field)

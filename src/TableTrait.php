@@ -35,9 +35,31 @@ trait TableTrait
         return $this->dao->deleteByIds($ids);
     }
 
-    public function update($request)
+    public function fieldUpdate($request)
     {
+        $primaryKey = $this->dao->primaryKey();
+        $id = $request->getInt($primaryKey);
+        $field = $request->getString('field');
+        $value = $request->getString('value');
+        return $this->dao->updateField($id, $field, $value);
+    }
 
+    public function submit($request)
+    {
+        $primaryKey = $this->dao->primaryKey();
+        $id = $request->getInt($primaryKey, 0);
+        $formData = $request->getArray('formData');
+        // 新加
+        if (empty($id)) {
+            $defaultData = $this->config->getFieldsDefault();
+            $formData = array_merge($defaultData, $formData);
+            $id = $this->dao->insert($formData);
+        }
+        // 编辑
+        else {
+            $this->dao->updateById($id, $formData);
+        }
+        return $id;
     }
 
     private function formatSearch($search)

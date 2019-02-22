@@ -5,6 +5,7 @@ abstract class Base
 {
     protected $dao;
     protected $defaultQuery = array();
+    protected $fieldDefaultValue = [];
     protected $type = 'base';
 
     public function __construct($dao)
@@ -25,6 +26,16 @@ abstract class Base
     public function getType()
     {
         return $this->type;
+    }
+
+    public function setFieldDefault($key, $value)
+    {
+        $this->fieldDefaultValue[$key] = $value;
+    }
+
+    public function getFieldsDefault()
+    {
+        return $this->fieldDefaultValue;
     }
 
     abstract public function getConfig();
