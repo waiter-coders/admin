@@ -1,66 +1,50 @@
-### 概述
-该项目可快速开发后台，并保持了良好的二次开发性能。
+waitphpadmin是一套后台的快速开发方案。它通过build方式为你生成基础的代码，以实现一些常用常用功能（如列表的展示、搜索、排序）。方案也并提供了一些比较方便的方式，让你通过简单的修改便可以调整具体的细节。当然，方案很重要的优点，就是良好的二次开发性能。实际上，在该方案基础上写代码，和你在框架上进行开发，没有什么区别。
 
-基础页示例：
+方案需要5.4以上的php环境，需要composer去安装相关包。如无相关程序，请查阅相关文档安装。
 
+#### 生成项目
 
+ 以'admin'构建项目为例，执行以下命令便可以构建项目：
 
-### 搭建环境
-
-通过composer进行安装,并通过builder工具安装admin
-```$xslt
+```bash
 composer create-project waiterphp/app admin
 cd admin
 php build admin
 ```
-请先修改数据库的配置信息。
+ 
+现在，你就可以访问项目下的public/index.html来查看后台了。默认的登录帐号密码都为admin
 
+#### 生成列表
+生成页面前，请先编辑config/database.php文件，配置数据库信息。
 
-
-### 项目构建
-以构建表格列表页为例，可通过builder构建：
-
+以常见的列表页为例，我们如果想把表'product_info'做列表展示，只需要执行以下命令：
+```bash
+php build admin.table --table product_info (--path product  --controller controller_name --model model_name)
 ```
-php build admin.table --table table_name --path base_path (--controller controller_name)
+命令会自动生成’“-table”参数对应的模型文件和控制器文件，在构建文件名时，命令会自动把下划线命名转化为驼峰命名。控制器的文件名也会自动添加页面功能标识。（比如此处都会添加Table后缀）
+对于多级文件目录，我们可以设置--path去指定父目录名。当父目录名是表名的一部分时，命令会认为父目录是表前缀，自动从文件名中去除。
+如--path设置为product，就会生成Product的父目录，文件夹下InfoTable的类文件。
+当然，你不希望文件名和表名一样，可以直接设置--controller和--model设置父目录下的类文件名称。
+注意：所有的文件名都为驼峰命名，命令会做自动转化。
+
+此时，我们便可以通过/Product/InfoTable访问该列表页了。
+
+> 当然，你会发现系统并没有自动为你生成菜单，请编辑config/menu.php把你刚刚生成的控制器添加到菜单中。
+
+#### 表单和树
+方案还提供了一些其他的页面小组件。
+如表单页：
+``` bash
+php build admin.form --table product_info (--path product  --controller controller_name --model model_name)
 ```
-项目会以table名生成model，名称会被格式化为驼峰命名法。
---path为model及controller的父目录，
---controller可以自定义控制器名称
+树状分类：
+``` bash
+php build admin.tree --table product_info (--path product  --controller controller_name --model model_name)
+```
 
-> 项目构建操作后，需要自行修改config/menu.php，以便显示菜单！
+因为以上代码公用一个info模型（都处理product_info表），所以运行时会询问你是否要覆盖dao文件，请选择否。而它们生成的控制器是不会冲突的，因为生成文件名都加了功能对应的后缀，如InfoForm  、InfoTree。
 
-可使用的构建组件有：
+#### 细节配置
 
-|组件|含义|可用参数|
-|:--:|:--|:--|
-|list|分页列表页||
-|form|表单页||
-|chart|统计图表||
-
-### 主要概念
-
-#### 域
-后台通过域的概念去管理所有控制器。
-
-#### 配置工具
-每一个组件，都提供一个工具类，帮我们更友好的生成相关数据。
-
-#### 布局功能
-1. 多组件
-2. 多组件大小比率和顺序
-3. 
-
-#### list功能
-1. 显示列表
-2. 支持分页
-3. 支持公共功能
-4. 支持单条功能
-5. 支持搜索
-6. 支持单数据快速编辑
-7. 支持多选操作
-8. 列表支持数据转化和局部隐藏
-
-### 
-
-
+请参考对应trait接口。文档完善中
 
