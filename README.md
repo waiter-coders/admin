@@ -48,6 +48,7 @@ php build admin.tree --table product_info (--path product  --controller controll
 #### 控制器接口
 
 TableConfig接口
+
 | 接口      |    含义 | 实例|
 | :-------- | --------| :-- |
 | setShowFields  | 设置显示字段（默认全部显示） |  setShowFields('username,sex,birthday')   |
