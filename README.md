@@ -9,6 +9,7 @@ waitphpadmin是一套后台的快速开发方案。它通过build方式为你生
 ```bash
 composer create-project waiterphp/app admin
 cd admin
+chmod 777 storage -R
 php build admin
 ```
  
@@ -19,7 +20,7 @@ php build admin
 
 以常见的列表页为例，我们如果想把表'product_info'做列表展示，只需要执行以下命令：
 ```bash
-php build admin.table --table product_info (--path product  --controller controller_name --model model_name)
+php build admin.list --table product_info (--path product  --controller controller_name --model model_name)
 ```
 命令会自动生成’“-table”参数对应的模型文件和控制器文件，在构建文件名时，命令会自动把下划线命名转化为驼峰命名。控制器的文件名也会自动添加页面功能标识。（比如此处都会添加Table后缀）
 对于多级文件目录，我们可以设置--path去指定父目录名。当父目录名是表名的一部分时，命令会认为父目录是表前缀，自动从文件名中去除。
@@ -44,7 +45,21 @@ php build admin.tree --table product_info (--path product  --controller controll
 
 因为以上代码公用一个info模型（都处理product_info表），所以运行时会询问你是否要覆盖dao文件，请选择否。而它们生成的控制器是不会冲突的，因为生成文件名都加了功能对应的后缀，如InfoForm  、InfoTree。
 
-#### 细节配置
+#### 控制器接口
 
-请参考对应trait接口。文档完善中
+TableConfig接口
+| 接口      |    含义 | 实例|
+| :-------- | --------| :-- |
+| setShowFields  | 设置显示字段（默认全部显示） |  setShowFields('username,sex,birthday')   |
+| setOrderFields     |   设置排序字段（默认为所有number类型的字段） |  setOrderFields('username,birthday')  |
+| addTableAction      |    设置全表操作 | addTableAction('actionName')->setName('按钮名')->setAjax()->setUrl('contoller_method')|
+|addRowAction|设置行操作|addRowAction('actionName')->setName('按钮名')->setAjax()->setUrl('contoller_method?@primaryKey@=@data.id@')|
+|setFastAdd|设置快速添加|setFastAdd('field_name')|
+|setFastEdit|设置字段为快速编辑|setFastEdit('field_name')|
+|setSearch|设置搜索项（type有 = 等号， like 文字，range 时间区间）|setSearch('field', ''searchType') |
+|setDetail|设置详情页链接|setDetail('current_controller_method')|
 
+
+FormConfig接口
+
+TreeConfig接口
